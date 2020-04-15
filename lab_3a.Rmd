@@ -52,7 +52,7 @@ The functionality of R is extended by loading packages that researchers have con
 
 Each package of interest must be installed and loaded before it can be used. The packages will not be immediately available when R is opened. A package only has to be installed once on a computer, but the package will have to be loaded every time R is restarted. To install all of the packages used in this book, run the following:
 
-```{r,echo=F}
+```{r,echo=F, eval=FALSE}
 options(repos = c(CRAN = "https://rweb.crmda.ku.edu/cran/"))
 ```
 

@@ -45,14 +45,14 @@ class(class_mat)
 We can see that class_mat is a data frame. Data frames are one kind of object in R, akin to traditional data sets that we may find in other programs like Stata or Excel. Data frames allow users to hold different kinds of columns (like numeric values and characters) all together in a single object. Data frames are, however, not conducive to matrix operations (like matrix multiplication). If we want to do matrix multiplication and related operations, we need to work with matrix objects, rather than data frames. Additionally, the main packages in R for network analysis take matrices as inputs. Given this, let's go ahead and turn our object, class_mat, into a matrix. We can turn our data frame into a matrix using the as.matrix function:
 
 ```{r}
-class_mat=as.matrix(class_mat)
+class_mat = as.matrix(class_mat)
 ```
 
 Let's also add a useful set of row names and column names to the matrix. This will make it easier to intepret the matrix when printed. We will set the row names to be 1 to the number of rows and the column names to be 1 to the number of columns.
 
 ```{r}
-rownames(class_mat)=1:nrow(class_mat)
-colnames(class_mat)=1:ncol(class_mat)
+rownames(class_mat) = 1:nrow(class_mat)
+colnames(class_mat) = 1:ncol(class_mat)
 ```
 
 Now let’s take a look at the matrix.
@@ -64,7 +64,7 @@ class_mat
 We can see that the row names and column names run from 1 to 24, as we set above. The matrix itself consists of 0s and 1s, where a 1 means that i nominates j as a friend and 0 means that i did not nominate j as a friend, where i is the row and j is the column. For example, student 1 nominates students 3, 5, 7, and 21 as friends. Now, let's go ahead and read in the attribute data. Again, we read in the data directly using a URL: 
 
 ```{r}
-class_attributes=read.csv(file="https://sites.google.com/site/jeffreysmithdatafiles/class555_attributedata.csv")
+class_attributes = read_csv(file = "https://sites.google.com/site/jeffreysmithdatafiles/class555_attributedata.csv")
 class_attributes
 ```
 
@@ -89,7 +89,7 @@ class(class_attributes[,"grade"])
 The grade variable is an integer, meaning we can do mathematical operations on it.
 
 ```{r}
-class_attributes[,"grade"]*2
+class_attributes[,"grade"] * 2
 ```
 
 Now, let's check on the class of gender.
@@ -129,7 +129,7 @@ The function in igraph to create a network from a matrix is graph_from_adjacency
 The output is an igraph object, which holds all of the network information defined by the input matrix. Here we will create an igraph object called class_netbymatrix using class_mat as input.
 
 ```{r}
-class_netbymatrix=graph_from_adjacency_matrix(adjmatrix=class_mat, mode="directed")
+class_netbymatrix = graph_from_adjacency_matrix(adjmatrix=class_mat, mode="directed")
 class_netbymatrix
 ```
 
@@ -142,15 +142,15 @@ We can see that the igraph object contains lots of useful information, including
 Let's first do gender, adding an attribute called "gender" to the igraph object, equal to the gender values in class_attributes$gender.
 
 ```{r}
-class_netbymatrix=set_vertex_attr(graph=class_netbymatrix, name="gender", value=class_attributes$gender)
+class_netbymatrix = set_vertex_attr(graph=class_netbymatrix, name = "gender", value = class_attributes$gender)
 
 ```
 
 And now we add grade and race to the igraph object.
 
 ```{r}
-class_netbymatrix=set_vertex_attr(graph=class_netbymatrix, name="grade", value=class_attributes$grade)
-class_netbymatrix=set_vertex_attr(graph=class_netbymatrix, name="race", value=class_attributes$race)
+class_netbymatrix = set_vertex_attr(graph = class_netbymatrix, name = "grade", value = class_attributes$grade)
+class_netbymatrix = set_vertex_attr(graph = class_netbymatrix, name = "race", value = class_attributes$race)
 class_netbymatrix
 
 ```
