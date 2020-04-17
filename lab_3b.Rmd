@@ -33,7 +33,7 @@ The first step is to read the network data into R (it is possible, but not pract
 We begin by reading in the data matrix using a read.csv function. The main input is the location of the file to read in. In this case, we will read in the file directly from a URL (we could also read in files saved locally on a computer).
 
 ```{r}
-class_mat = read_csv(file = "https://sites.google.com/site/jeffreysmithdatafiles/class555_matrix.csv")
+class_mat = read.csv(file = "https://sites.google.com/site/jeffreysmithdatafiles/class555_matrix.csv")
 ```
 
 Before we take a look at the matrix, let's clean things up a bit. Let's first check on the class of the object we created (class_mat):
@@ -64,7 +64,7 @@ class_mat
 We can see that the row names and column names run from 1 to 24, as we set above. The matrix itself consists of 0s and 1s, where a 1 means that i nominates j as a friend and 0 means that i did not nominate j as a friend, where i is the row and j is the column. For example, student 1 nominates students 3, 5, 7, and 21 as friends. Now, let's go ahead and read in the attribute data. Again, we read in the data directly using a URL: 
 
 ```{r}
-class_attributes = read_csv(file = "https://sites.google.com/site/jeffreysmithdatafiles/class555_attributedata.csv")
+class_attributes = read.csv(file = "https://sites.google.com/site/jeffreysmithdatafiles/class555_attributedata.csv")
 class_attributes
 ```
 
@@ -142,7 +142,7 @@ We can see that the igraph object contains lots of useful information, including
 Let's first do gender, adding an attribute called "gender" to the igraph object, equal to the gender values in class_attributes$gender.
 
 ```{r}
-class_netbymatrix = set_vertex_attr(graph=class_netbymatrix, name = "gender", value = class_attributes$gender)
+class_netbymatrix = set_vertex_attr(graph = class_netbymatrix, name = "gender", value = class_attributes$gender)
 
 ```
 

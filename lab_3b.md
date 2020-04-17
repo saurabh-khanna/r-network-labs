@@ -63,15 +63,8 @@ read in the file directly from a URL (we could also read in files saved
 locally on a computer).
 
 ``` r
-class_mat = read_csv(file = "https://sites.google.com/site/jeffreysmithdatafiles/class555_matrix.csv")
+class_mat = read.csv(file = "https://sites.google.com/site/jeffreysmithdatafiles/class555_matrix.csv")
 ```
-
-    ## Parsed with column specification:
-    ## cols(
-    ##   .default = col_double()
-    ## )
-
-    ## See spec(...) for full column specifications.
 
 Before we take a look at the matrix, let’s clean things up a bit. Let’s
 first check on the class of the object we created (class\_mat):
@@ -80,7 +73,7 @@ first check on the class of the object we created (class\_mat):
 class(class_mat)
 ```
 
-    ## [1] "spec_tbl_df" "tbl_df"      "tbl"         "data.frame"
+    ## [1] "data.frame"
 
 We can see that class\_mat is a data frame. Data frames are one kind of
 object in R, akin to traditional data sets that we may find in other
@@ -149,35 +142,35 @@ read in the attribute data. Again, we read in the data directly using a
 URL:
 
 ``` r
-class_attributes = read_csv(file = "https://sites.google.com/site/jeffreysmithdatafiles/class555_attributedata.csv")
-```
-
-    ## Parsed with column specification:
-    ## cols(
-    ##   id = col_double(),
-    ##   gender = col_character(),
-    ##   grade = col_double(),
-    ##   race = col_character()
-    ## )
-
-``` r
+class_attributes = read.csv(file = "https://sites.google.com/site/jeffreysmithdatafiles/class555_attributedata.csv")
 class_attributes
 ```
 
-    ## # A tibble: 24 x 4
-    ##       id gender grade race 
-    ##    <dbl> <chr>  <dbl> <chr>
-    ##  1     1 Male      12 White
-    ##  2     2 Female    12 White
-    ##  3     3 Female    12 White
-    ##  4     4 Female    12 White
-    ##  5     5 Male      12 White
-    ##  6     6 Female    12 White
-    ##  7     7 Male      11 Black
-    ##  8     8 Male      11 White
-    ##  9     9 Male      11 White
-    ## 10    10 Female    11 White
-    ## # … with 14 more rows
+    ##    id gender grade  race
+    ## 1   1   Male    12 White
+    ## 2   2 Female    12 White
+    ## 3   3 Female    12 White
+    ## 4   4 Female    12 White
+    ## 5   5   Male    12 White
+    ## 6   6 Female    12 White
+    ## 7   7   Male    11 Black
+    ## 8   8   Male    11 White
+    ## 9   9   Male    11 White
+    ## 10 10 Female    11 White
+    ## 11 11 Female    10 White
+    ## 12 12 Female    10 White
+    ## 13 13   Male    10 White
+    ## 14 14   Male    10 White
+    ## 15 15 Female    10 White
+    ## 16 16   Male    10 White
+    ## 17 17 Female    10 White
+    ## 18 18 Female    10 White
+    ## 19 19 Female    10 White
+    ## 20 20 Female    10 White
+    ## 21 21 Female    10 White
+    ## 22 22 Female    10 White
+    ## 23 23 Female    10 White
+    ## 24 24 Female    10 White
 
 This is a simple data frame describing the gender, grade and race of
 each student in the network. The data frame thus holds the attributes of
@@ -191,9 +184,10 @@ calling a particular column in the data frame.
 class_attributes$gender
 ```
 
-    ##  [1] "Male"   "Female" "Female" "Female" "Male"   "Female" "Male"   "Male"  
-    ##  [9] "Male"   "Female" "Female" "Female" "Male"   "Male"   "Female" "Male"  
-    ## [17] "Female" "Female" "Female" "Female" "Female" "Female" "Female" "Female"
+    ##  [1] Male   Female Female Female Male   Female Male   Male   Male   Female
+    ## [11] Female Female Male   Male   Female Male   Female Female Female Female
+    ## [21] Female Female Female Female
+    ## Levels: Female Male
 
 Same as above:
 
@@ -201,20 +195,10 @@ Same as above:
 class_attributes[,"gender"] 
 ```
 
-    ## # A tibble: 24 x 1
-    ##    gender
-    ##    <chr> 
-    ##  1 Male  
-    ##  2 Female
-    ##  3 Female
-    ##  4 Female
-    ##  5 Male  
-    ##  6 Female
-    ##  7 Male  
-    ##  8 Male  
-    ##  9 Male  
-    ## 10 Female
-    ## # … with 14 more rows
+    ##  [1] Male   Female Female Female Male   Female Male   Male   Male   Female
+    ## [11] Female Female Male   Male   Female Male   Female Female Female Female
+    ## [21] Female Female Female Female
+    ## Levels: Female Male
 
 The columns in a data frame can take different forms, or classes. For
 example, let’s check on the class of our grade variable.
@@ -223,7 +207,7 @@ example, let’s check on the class of our grade variable.
 class(class_attributes[,"grade"])
 ```
 
-    ## [1] "tbl_df"     "tbl"        "data.frame"
+    ## [1] "integer"
 
 The grade variable is an integer, meaning we can do mathematical
 operations on it.
@@ -232,31 +216,7 @@ operations on it.
 class_attributes[,"grade"] * 2
 ```
 
-    ##    grade
-    ## 1     24
-    ## 2     24
-    ## 3     24
-    ## 4     24
-    ## 5     24
-    ## 6     24
-    ## 7     22
-    ## 8     22
-    ## 9     22
-    ## 10    22
-    ## 11    20
-    ## 12    20
-    ## 13    20
-    ## 14    20
-    ## 15    20
-    ## 16    20
-    ## 17    20
-    ## 18    20
-    ## 19    20
-    ## 20    20
-    ## 21    20
-    ## 22    20
-    ## 23    20
-    ## 24    20
+    ##  [1] 24 24 24 24 24 24 22 22 22 22 20 20 20 20 20 20 20 20 20 20 20 20 20 20
 
 Now, let’s check on the class of gender.
 
@@ -264,7 +224,7 @@ Now, let’s check on the class of gender.
 class(class_attributes[,"gender"])
 ```
 
-    ## [1] "tbl_df"     "tbl"        "data.frame"
+    ## [1] "factor"
 
 gender is a factor, meaning it is a categorical (i.e., non-numeric)
 variable with an order to it. In this case Female is first and Male is
@@ -274,7 +234,7 @@ second:
 levels(class_attributes[,"gender"])
 ```
 
-    ## NULL
+    ## [1] "Female" "Male"
 
 Factors do not represent meaningful numbers and thus we cannot do
 mathematical operations on them. Factors are still useful, however, as
@@ -328,9 +288,9 @@ class_netbymatrix = graph_from_adjacency_matrix(adjmatrix=class_mat, mode="direc
 class_netbymatrix
 ```
 
-    ## IGRAPH 297f828 DN-- 24 77 -- 
+    ## IGRAPH 308ee6e DN-- 24 77 -- 
     ## + attr: name (v/c)
-    ## + edges from 297f828 (vertex names):
+    ## + edges from 308ee6e (vertex names):
     ##  [1] 1 ->3  1 ->5  1 ->7  1 ->21 2 ->3  2 ->6  3 ->6  3 ->8  3 ->16 3 ->24
     ## [11] 4 ->13 4 ->18 7 ->1  7 ->9  7 ->10 7 ->16 8 ->3  8 ->9  8 ->13 9 ->5 
     ## [21] 9 ->8  10->6  10->14 10->19 10->20 10->24 11->12 11->15 11->18 11->24
@@ -357,7 +317,7 @@ Let’s first do gender, adding an attribute called “gender” to the igraph
 object, equal to the gender values in class\_attributes$gender.
 
 ``` r
-class_netbymatrix = set_vertex_attr(graph=class_netbymatrix, name = "gender", value = class_attributes$gender)
+class_netbymatrix = set_vertex_attr(graph = class_netbymatrix, name = "gender", value = class_attributes$gender)
 ```
 
 And now we add grade and race to the igraph object.
@@ -368,9 +328,9 @@ class_netbymatrix = set_vertex_attr(graph = class_netbymatrix, name = "race", va
 class_netbymatrix
 ```
 
-    ## IGRAPH 297f828 DN-- 24 77 -- 
-    ## + attr: name (v/c), gender (v/c), grade (v/n), race (v/c)
-    ## + edges from 297f828 (vertex names):
+    ## IGRAPH 308ee6e DN-- 24 77 -- 
+    ## + attr: name (v/c), gender (v/n), grade (v/n), race (v/n)
+    ## + edges from 308ee6e (vertex names):
     ##  [1] 1 ->3  1 ->5  1 ->7  1 ->21 2 ->3  2 ->6  3 ->6  3 ->8  3 ->16 3 ->24
     ## [11] 4 ->13 4 ->18 7 ->1  7 ->9  7 ->10 7 ->16 8 ->3  8 ->9  8 ->13 9 ->5 
     ## [21] 9 ->8  10->6  10->14 10->19 10->20 10->24 11->12 11->15 11->18 11->24
@@ -443,9 +403,9 @@ class_netbyedgelist=graph_from_data_frame(d=class_edges, directed=T)
 class_netbyedgelist
 ```
 
-    ## IGRAPH 80a5db1 DNW- 24 77 -- 
+    ## IGRAPH 1a42bd1 DNW- 24 77 -- 
     ## + attr: name (v/c), weight (e/n)
-    ## + edges from 80a5db1 (vertex names):
+    ## + edges from 1a42bd1 (vertex names):
     ##  [1] 1 ->3  1 ->5  1 ->7  1 ->21 2 ->3  2 ->6  3 ->6  3 ->8  3 ->16 3 ->24
     ## [11] 4 ->13 4 ->18 7 ->1  7 ->9  7 ->10 7 ->16 8 ->3  8 ->9  8 ->13 9 ->5 
     ## [21] 9 ->8  10->6  10->14 10->19 10->20 10->24 11->12 11->15 11->18 11->24
@@ -472,9 +432,9 @@ class_netbyedgelist=graph_from_data_frame(d=class_edges, directed=T, vertices=cl
 class_netbyedgelist
 ```
 
-    ## IGRAPH 4def07c DNW- 24 77 -- 
+    ## IGRAPH 4cbe454 DNW- 24 77 -- 
     ## + attr: name (v/c), gender (v/c), grade (v/n), race (v/c), weight (e/n)
-    ## + edges from 4def07c (vertex names):
+    ## + edges from 4cbe454 (vertex names):
     ##  [1] 1 ->3  1 ->5  1 ->7  1 ->21 2 ->3  2 ->6  3 ->6  3 ->8  3 ->16 3 ->24
     ## [11] 4 ->13 4 ->18 7 ->1  7 ->9  7 ->10 7 ->16 8 ->3  8 ->9  8 ->13 9 ->5 
     ## [21] 9 ->8  10->6  10->14 10->19 10->20 10->24 11->12 11->15 11->18 11->24
@@ -1342,7 +1302,7 @@ all_shortest_paths(class_netbyedgelist, from=1, to=6)
 
     ## $res
     ## $res[[1]]
-    ## + 3/24 vertices, named, from 4def07c:
+    ## + 3/24 vertices, named, from 4cbe454:
     ## [1] 1 3 6
     ## 
     ## 
@@ -1359,11 +1319,11 @@ all_shortest_paths(class_netbyedgelist, from=1, to=16)
 
     ## $res
     ## $res[[1]]
-    ## + 3/24 vertices, named, from 4def07c:
+    ## + 3/24 vertices, named, from 4cbe454:
     ## [1] 1  3  16
     ## 
     ## $res[[2]]
-    ## + 3/24 vertices, named, from 4def07c:
+    ## + 3/24 vertices, named, from 4cbe454:
     ## [1] 1  7  16
     ## 
     ## 
