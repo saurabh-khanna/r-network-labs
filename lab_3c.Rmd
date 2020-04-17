@@ -1,23 +1,15 @@
 ---
-title:
-output:
-  html_document:
-    includes:
-      in_header: header.html
+title: "Dynamic Network Data"
+author: "Saurabh Khanna"
+date: "`r Sys.Date()`"
+output: 
+  github_document:
+    toc: true
 ---
-
-<style>
-pre code, pre, code {
-  white-space: pre !important;
-  overflow-x: scroll !important;
-  word-break: keep-all !important;
-  word-wrap: initial !important;
-}
-</style>
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-options(width=1000)
+options(width = 1000)
 ```
 
 # Chapter 3: R Tutorial on Dynamic Network Data 

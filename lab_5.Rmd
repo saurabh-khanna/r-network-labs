@@ -1,23 +1,15 @@
 ---
-title:
+title: "Napoleon's invasion of Russia"
+author: "Saurabh Khanna"
+date: "`r Sys.Date()`"
 output: 
-  html_document:
-    includes:
-      in_header: header.html
+  github_document:
+    toc: true
 ---
-
-<style>
-pre code, pre, code {
-  white-space: pre !important;
-  overflow-x: scroll !important;
-  word-break: keep-all !important;
-  word-wrap: initial !important;
-}
-</style>
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-options(width=1000)
+options(width = 1000)
 ```
 
 # Chapter 5: R Tutorial on Network Visualization
