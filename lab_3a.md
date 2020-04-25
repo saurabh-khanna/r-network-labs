@@ -1,7 +1,7 @@
 Introduction to R
 ================
 Saurabh Khanna
-2020-04-15
+2020-04-24
 
   - [Chapter 3: Basic Introduction to
     R](#chapter-3-basic-introduction-to-r)
@@ -32,7 +32,7 @@ readers to follow along, even without detailed knowledge of R. Readers
 interested in learning R in more depth should consider one of the many
 introductory R textbooks.
 
-### Preliminaries
+## Preliminaries
 
 The first step is to gain access to R, which is free and available on
 the R website: <http://cran.r-project.org/>. Simply go to the R website,
@@ -76,7 +76,7 @@ run. For example:
 #This is a comment. R will not recognize this as a command.
 ```
 
-### Packages
+## Packages
 
 The functionality of R is extended by loading packages that researchers
 have contributed to the R community. Packages are sets of useful
