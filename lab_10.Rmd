@@ -1,0 +1,342 @@
+---
+title:
+output:
+  html_document:
+    includes:
+      in_header: header.html
+---
+
+<style>
+pre code, pre, code {
+  white-space: pre !important;
+  overflow-x: scroll !important;
+  word-break: keep-all !important;
+  word-wrap: initial !important;
+}
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(width=1000)
+```
+
+# Chapter 10: R Tutorial on Positions and Roles
+
+Built with R version
+`r getRversion()`
+
+This tutorial offers an analysis in R focused on defining positions and roles in a network. The goal of a role analysis is to: a) place nodes into positions based on their pattern of ties to others; and b) describe the pattern of ties that exist between positions, or the roles, that emerge in the network of interest. We will walk through a simple analysis step-by-step, to see the logic of how to do a role analysis. See also the blockmodeling package for an extended set of functions to perform different types of blockmodels. We will utilize the same network used in Chapter 8 (on groups) for this tutorial. The data are based on different interactions occurring between students (and teachers) in a classroom. The data were collected by Daniel McFarland and contain information on three different kinds of relations: friendship (measured as 2 = best friend, 1 = friend, 0 = not friend); social (measured as social interactions per hour); and task (measured as task interactions per hour). 
+
+Our main substantive goal is to describe the role structure that exists in this classroom. How do different sets of nodes relate to one another within the larger functioning of the classroom? What are the rights and responsibilities of one set relative to another? As this is a classroom, the rights and responsibilities pertain to expectations of social interaction (do nodes in one set have positive social interactions with nodes in another?) as well as task interactions. For example, is this is a system where students tend to break off into separate friendship groups that also map onto task interactions? Or perhaps there are certain alliances, where certain friendship groups come together to complete work in the classroom. Or maybe there is a single, important node (like the teacher) that is crucial in holding the classroom together. 
+
+### 1. Reading in Example Network Data
+For this session we will start with the igraph package.
+
+```{r message=F}
+library(igraph)
+```
+
+Let's first read in the classroom network data.
+
+```{r}
+class182_networkdata=read.csv(file="https://sites.google.com/site/jeffreysmithdatafiles/class182_networkdata.csv")
+
+```
+
+And let's take a look at the first six rows:
+
+```{r}
+head(class182_networkdata)
+```
+
+The data frame holds information for each dyad in the classroom showing information for three relations: friendship, social interactions and task interactions. Let's also read in an attribute file to attach to our network.
+
+```{r}
+class182_attributes=read.csv(file="https://sites.google.com/site/jeffreysmithdatafiles/class182_attributedata.csv")
+head(class182_attributes)
+```
+
+We have information on race, grade and gender. Note that grade '13' is coded to denote the teacher in this classroom. Note also that ids is our first column. 
+
+Let's go ahead and create separate networks based on each relation. We start with friendship, defining a (weighted) edge where the friendship value is greater than 0.
+
+```{r}
+edgelist_friendship=class182_networkdata[class182_networkdata$friend_tie>0, c("ego", "alter", "friend_tie")]
+head(edgelist_friendship)
+```
+
+And here we create the friendship network. 
+
+```{r}
+net182_friend=graph_from_data_frame(d=edgelist_friendship, directed=T, vertices=class182_attributes) 
+net182_friend
+```
+
+We can see that the friendship network has been created, with friend_tie defining the edge weights. And now we create the social interaction network. We create the edgelist from dyads where the social interaction value is >0. 
+
+```{r}
+edgelist_social=class182_networkdata[class182_networkdata$social_tie>0, c("ego", "alter", "social_tie")]
+
+```
+
+We will treat the social and task networks as undirected. We treat the task and social networks as undirected as conceptually if i does a task with j, j must be doing the task with i (generally also true of social interaction).
+
+```{r}
+net182_social=graph_from_data_frame(d=edgelist_social, directed=F, vertices=class182_attributes) 
+net182_social
+```
+
+As we can see, igraph has interpreted our network as undirected but duplicated the edges (i.e., all of the edges are listed twice). That happened as we included an edge attribute and it was possible that the value for ij was different than for ji. igraph thus automatically kept both, but we don't really want that, so let's fix it. We will 'simplify' the network so ij is only in there once.
+
+```{r}
+net182_social=simplify(net182_social, edge.attr.comb="mean") 
+```
+
+The edge.attr.comb option tells igraph how to combine attributes in cases where edges are removed (so ij exists and ji exists but we only need ij as it undirected). Here we take the mean reported social interactions between ij and ji, in case any small discrepancies did exist.
+
+```{r}
+net182_social
+```
+
+We can see that there are now only 67 edges present. And now we do the same thing for the task network.
+
+```{r}
+edgelist_task=class182_networkdata[class182_networkdata$task_tie>0, c("ego", "alter", "task_tie")]
+net182_task=graph_from_data_frame(d=edgelist_task, directed=F, vertices=class182_attributes) 
+net182_task=simplify(net182_task, edge.attr.comb="mean")
+net182_task
+```
+
+### 2. Getting the Data Ready 
+Here we will use the classroom data read in above. We incorporate all three relations into the analysis. Role analysis is built to incorporate multiple relations and we make use of the friendship, task and social interaction data. The first step in doing a role/position analysis is to place nodes into equivalent positions. Here, we define equivalence based on the idea of structural equivalence. With structural equivalence, nodes who are tied to similar nodes are placed in the same position. In order to do that we must know how similar/dissimilar each node is compared to the other nodes. Formally, this means calculating the distance between rows (where the rows show who i is friends with, does tasks with etc.) Nodes who are friends with the same people (even if they are not themselves friends), do tasks with the same people, etc.  should be in the same position.
+
+One complication in doing this kind of analysis is that we want to make use of multiple relations (here friendship, social and task). We need to put together nodes with the same interaction patterns across all relations at once. The relations of interest must then be taken together as a single input. Given this requirement, let's first get the matrices for each relation and put them together in one matrix. Here we get the matrices for each relation: friendship, social and task.
+
+```{r}
+friend_mat=as_adjacency_matrix(net182_friend, attr="friend_tie", sparse=F) 
+social_mat=as_adjacency_matrix(net182_social, attr="social_tie", sparse=F)
+task_mat=as_adjacency_matrix(net182_task, attr="task_tie", sparse=F)
+```
+
+Note that for each one the input network changes. Note also that we include an attr option to get the values on each edge. Let's look at the friendship matrix. 
+
+```{r}
+friend_mat
+```
+
+Note that there are values corresponding to the strength of relationship, friend or best friend, from i to j. We also need to create a matrix showing the ties coming in to each node, from j to i. This is simply the transpose of friend_mat.
+
+```{r}
+friend_mat_in=t(friend_mat)
+```
+
+The task and social matrices are also valued, showing the task/social interactions per hour. We do not need to transpose them as the relations are undirected. Now, let's stack our matrices together. Here we will combine them column-wise, using a cbind command. Before we stack our matrices, let's standardize our columns so they are comparable. This entails  dividing each column by the standard deviation associated with that type of relation. We will also mean-center the columns. Thus, for all friendship columns we will subtract the mean of the friend_mat matrix and divide by the standard deviation of friend_mat.
+ 
+```{r}
+friend_mat_std=(friend_mat-mean(friend_mat))/sd(friend_mat) #for friendship
+friend_mat_in_std=t(friend_mat_std) #for the incoming friendship ties
+task_mat_std=(task_mat-mean(task_mat))/sd(task_mat) #for task
+social_mat_std=(social_mat-mean(social_mat))/sd(social_mat) #for social
+```
+
+And now we can combine all of the standardized matrices into one matrix. 
+
+```{r}
+friends_task_social_std=cbind(friend_mat_std, friend_mat_in_std, task_mat_std, social_mat_std) 
+dim(friends_task_social_std) 
+```
+
+This matrix contains the friend ties going out from i, the friend ties going in to i, the task ties and the social ties. Note that we included the transpose of the friendship matrix only because the friendship relation was asymmetric. We could also do the same thing using the the non-standardized matrices:
+
+```{r}
+friends_task_social=cbind(friend_mat, friend_mat_in, task_mat, social_mat) 
+```
+
+### 3. Calculating Distance Between Nodes in the Network based on Pattern of Ties
+Now we have a single n x 4n matrix that represents friendship, social and task interactions. From this, we can generate an n x n distance matrix that shows the degree of structural equivalence of each node in the network. The calculation shows how different/similar each row, or node, is to every other row. Nodes with similar patterns of network ties (along the 4 types of ties) will have low distance between them. The function is dist. The inputs are: x=data to calculate distance on; method=method to calculate distance between rows. There are a number of options to calculate the distance between rows, including euclidean distance, defined as: (sqrt(sum((x_i - y_i)^2))). We use the euclidean option here.
+
+```{r}
+euclid_dist=dist(x=friends_task_social_std, method="euclidean") 
+euclid_dist
+```
+
+This suggests, for example, that node 1 has similar ties as node 12 and really different ties as node 13. Note that it is also possible to use correlation as a means of defining the similarity/dissimilarity between rows. Now, let's visualize the distances using MDS, based on the euclidean distance calculation. The cmdscale function performs classical multidimensional scaling, putting each case into a position in a space, such that the distance between positions is (approximately) equal to the distance between those rows in the data. The basic inputs are the distance matrix and k, the number of dimensions. Here we want a two-dimensional solution to make it easier to visualize.
+
+```{r}
+fit=cmdscale(euclid_dist, k=2) 
+fit
+```
+
+Let’s grab the x, y coordinates and then plot the solution.
+
+```{r}
+x=fit[,1]
+y=fit[,2]
+```
+
+First, we will set up the plot with title, axes, etc. but no points. And then we will put in the labels using the text function. The first two inputs to text are the x, y coordinates. The labels option tells R what to print and cex controls the size of the labels. 
+
+```{r}
+plot(x, y, xlab="Coordinate 1", ylab="Coordinate 2", main="2 Dimensional MDS Solution", type="n") 
+text(x, y, labels=1:length(x), cex=1)
+```
+
+Looking at the figure, our first impression is that there are clearly defined positions in the network. We can see, for example, that node 16 is quite distinct from everyone else, while nodes 1, 10, 12 and 15 cluster together, meaning they have similar patterns of friendship, social and task interactions. We will, however, want to use a more formal analysis to make an informed decision on how many positions gives us a reasonable approximation of the underlying structure of the network. 
+
+### 4. Defining Positions 
+Here, we cluster our nodes into structurally equivalent positions. We will take our distance matrix and try to cluster our nodes so that nodes who are close, or have the same pattern of ties, are placed into the same position. Note that this is conceptually different than finding groups (or communities, see Chapter 8). Nodes are placed into positions based on having the same pattern of ties to other nodes. It is thus possible for nodes to be placed together in a position even if they have few ties to each other, as long as they have the same set of ties to all other nodes. Thus, it is possible to have a position with low internal density.
+
+There are many different approaches to clustering data. We will focus on a simple approach, hierarchical clustering, but discuss other options below. Note that these approaches are general solutions to the problem of clustering data and are not particular to network data. 
+
+#### 4.1. Hierarchical Clustering
+hclust() performs a hierarchical agglomerative operation based on the values in the input distance matrix. Each node starts in their own cluster; at each stage the two closest clusters are joined until all nodes are in a single cluster. The standard visualization is a dendrogram. By default, hclust() agglomerates clusters via a "complete linkage" algorithm, determining cluster proximity by looking at the distance of the two points across clusters that are farthest away from one another. The input to hclust is the distance matrix, calculated above.
+
+```{r}
+hc=hclust(euclid_dist)
+```
+
+Let's plot the resulting dendrogram.
+
+```{r}
+plot(hc)
+```
+
+Let's visualize different clusters on the tree. First, let's look at the 5 cluster solution. We will use a rect.hclust command to tell R what point to cut the tree, or to stop aggregating. The inputs are the hclust output from above and the number of clusters you want to examine.
+
+```{r}
+plot(hc)
+plot.clusters=rect.hclust(hc, k=5)
+```
+
+Let’s also extract the position memberships for k=5 clusters. The function is cuttree and the inputs are the hclust object and the number of clusters we want to examine. 
+
+```{r}
+hc_ids=cutree(hc, k=5)  
+hc_ids
+```
+
+This vector holds the position of each node in the network based on a 5 cluster solution. For example, we can see that nodes 1, 9, 10, 12 and 15 are grouped together. A hierarchical clustering approach makes it easy to look at the positions that emerge at different levels of aggregation, from very broadly defined positions (with more heterogeneity within) to more narrowly defined sets where the cases are very similar. It is also possible to use various criteria to determine the 'optimal' number of clusters of a hierarchical algorithm. This will be particularly crucial when the researcher only wants to examine a single solution. Here we can make use of the NbClust package.
+
+```{r}
+library(NbClust)
+```
+
+The key function is NbClust. The inputs are the data of interest, the distance metric, the method to use in the hierarchical algorithm, and the index to use to choose the optimal number of clusters. Here we use the "ch" criteria of Calinski and Harabasz (1974) but there are many options. 
+
+```{r}
+clusters=NbClust(data=friends_task_social_std, distance="euclidean", method="complete", index=c("ch"))  
+clusters 
+```
+
+Under this criteria the optimal solution has 4 clusters. Note that the inputs, in terms of distance and method, match that used above. Note also that there are many other means of finding clusters, including k-means, Partitioning Around Medoids, and more model-based approaches. These approaches attempt to find the best fit, including the best number of clusters. Different approaches utilize different heuristics and may yield slightly different results. `?kmeans` `?pamk` `?Mclust` 
+
+In general, it is a good idea to compare the results across different approaches. Additionally, a strictly 'statistical' answer to defining positions may not always be desirable, as the researcher, with a deep understanding of the substantive case, may have good reason to examine one set of positions rather than another (for example, when choosing between levels of aggregation). It is important to balance concerns over fit with concerns over interpretation. 
+
+### 5. Role Analysis 
+We now turn to a role analysis, where the focus is on the ties between positions. We will utilize our 5 cluster solution from above to define the positions (saved in hc_ids). We will begin by forming a blockmodel, a matrix where the positions themselves are the nodes, or blocks, of interest. In this way, the previously found positions are the rows/columns of the matrix. Here will use the blockmodel command in sna.
+
+```{r message=F}
+detach(package:igraph)
+library(sna)
+```
+
+We will to do this 3 times, once each for the three relations we have. The function is blockmodel. The inputs are dat (the network of interest) and ec, the equivalence classes, a vector showing what class each node is in. In this case, ec is defined by the position of each node, as defined by our hierarchical clustering results above.
+
+```{r}
+blockmod_friend=blockmodel(friend_mat, ec=hc_ids)
+```
+
+The default is to calculate the density of ties between positions (defined as the mean value, taken over the rows/columns in the input matrix associated with those positions). In this case the values are weighted but we could do the same exercise with binary (0/1) data.
+
+```{r}
+blockmod_friend
+```
+
+The blockmodel shows us the (weighted) density of within and between block (i.e. position) ties. Here, we can see that block 1 sends most friendship ties to itself, and some to block 2 and 3. An NA on the diagonal means there is only one node in that position. And now for task and social networks:
+
+```{r}
+blockmod_task=blockmodel(task_mat, ec=hc_ids)
+blockmod_task
+
+blockmod_social=blockmodel(social_mat, ec=hc_ids)
+blockmod_social
+```
+
+Now, let's take the constructed blockmodel and interpret the roles that emerge in this network, in terms of the pattern of ties that exist between positions. The question here is what rules of behavior, or behavioral expectations, map onto each position, and then look at how these cohere into a larger social system.
+
+Let's begin by looking at block 5, as the pattern of friendship, social and task ties are so distinct here.  Let's grab just the blockmodel of within and between densities for row 5. Let's also only look at the first 3 digits when printed.
+
+```{r}
+round(blockmod_friend$block.model[5,], 3)
+round(blockmod_social$block.model[5,], 3)
+round(blockmod_task$block.model[5,], 3)
+```
+
+Remember that block 5 consists only of node 16. This node sends no friendship ties, socializes with members of every other position and does tasks with every other position. They also do quite a bit more tasks than other positions:
+
+```{r}
+rowSums(blockmod_task$block.model, na.rm=T)
+```
+
+In short, this is an individual playing the role of teacher in the classroom, who does tasks with all other nodes in the network but will not form friendships with them. In fact, it is the teacher in this case, but we arrived at the behavioral role without knowing that, and it was possible that another actor could have played that role. We now turn to the more complicated blocks, staring with block 3. 
+
+```{r}
+round(blockmod_friend$block.model[3,], 3)
+round(blockmod_social$block.model[3,], 3)
+round(blockmod_task$block.model[3,], 3)
+```
+
+Block 3 consists of nodes who are mostly friends and socialize with others in block 3. More distinctly, they have much lower levels of social interaction and task interactions with block 5, our teacher position (compared to the level of contact between block 5 and block 1, 2 or 4). For example, looking at task interactions with block 5:
+
+```{r}
+round(blockmod_task$block.model[,5], 3)
+```
+
+So, this is a role based on internal friendship and lack of engagement with the person playing the teacher role.  
+
+We can analyze blocks 2 and 4 together as they are constituted by high rates of friendship and social interactions:
+
+```{r}
+round(blockmod_friend$block.model[c(2, 4),], 3)
+round(blockmod_social$block.model[c(2, 4),], 3)
+round(blockmod_task$block.model[c(2, 4),], 3)
+```
+
+Blocks 2 and 4 are constituted by high rates of cross-block friendship, with high rates of friendship ties between block 2 and 4. Nodes 13 occupies a distinct position as the only node in block 4. Node 13 is distinct from those in block 2 as node 13 only sends friendship ties to those in block 2; in contrast, those in block 2 (2, 4, 7, 8 and 14) have friendship ties with those in block 1 and block 3 (as well as those in block 2 and block 4). Those in block 2 thus play a much more integrating role in the classroom.  Thus, the role associated with block 4 is characterized by having strong social ties to block 2 and no ties to anyone else, while block 2 serves as a kind of bridge between block 4 and the rest of the network. 
+
+Finally, block 1 has the following pattern of ties: 
+
+```{r}
+round(blockmod_friend$block.model[1,], 3)
+round(blockmod_social$block.model[1,], 3)
+round(blockmod_task$block.model[1,], 3)
+```
+
+Block 1 has high internal social interaction and high task engagement with the teacher role. Students in block 1 are almost entirely friends with other students in block 1 and have high engagement with the teacher. 
+
+At the level of the social system, we have a classroom where different nodes play different roles, constituted by: 
+a 'teacher' role [block 5], a 'low engagement student' role [block 3], a 'high engagement student' role [block 1], a 'bridging' role [block 2], and a 'being bridged' role [block 4].
+
+Overall, we see that the classroom is divided socially into pretty clear cut social groups (in terms of friendship), while much of the activity of the classroom is centered around the task and social activities of the teacher, with different blocks having different expectations of their interactions with that focal person. We also see that while most of the tasks happen with the teacher, the remaining tasks tend to happen within those social/peer groups. Thus, there is little task-based cooperation between friendship groups. The classroom is thus organized by a set of social groups that cluster together on their expectation of task interactions with the teacher (and within the group). The patterning on rights and responsibilities between student groups is less clear-cut. 
+
+Given this kind of analysis, a researcher could use these revealed roles to predict other outcomes, such as the emergence of alliances in a moment of disagreement/argument, school outcomes, etc. We can also ask who ends up playing different roles in the classroom. For example, we may be interested in knowing something about the gender, racial, etc. makeup of the various roles. In this way, we define the roles first and then ask who is likely to end up playing those roles and the consequences for such mapping (demographics onto roles). Here, let’s do a very quick analysis where we examine the gender and racial makeup of some the key roles that emerged out of our analysis. 
+
+For example, let’s look at the racial and gender distribution for block 1. Block 1 corresponds to a high engagement role; they almost exclusively have social interactions with each other but also have very high levels of task engagement with the teacher. They thus form an exclusive friendship set who are engaged with the teacher through tasks. Let’s look at the gender distribution for block 1.
+
+```{r}
+table(class182_attributes$gender[hc_ids==1])
+table(class182_attributes$race[hc_ids==1])
+```
+
+We can see that this high engagement role is played by a very diverse set of actors. In terms of both gender and race, the role splits nearly in half between female/male and black/white. It not the case that the high engagement role is played by actors who are all female, white, and so on. Now, let’s compare this to the low engagement role, associated with block 3. Block 3 is defined by high internal social interaction and low task engagement with the teacher. This is a friendship set that is less engaged in the activity of the class as a whole.  Looking at gender and race distribution for block 3:
+
+```{r}
+table(class182_attributes$gender[hc_ids==3])
+table(class182_attributes$race[hc_ids==3])
+```
+
+We can see here that gender is again quite diverse but that everyone identifies as white. Thus, the actors playing the low engagement role can be male or female but, in this case, are all white. 
+
+It is important to see that the roles themselves are defined completely separately from the attributes of those playing the role. Thus, it becomes an empirical question as to who ends up playing a given role in the classroom. In this case, the low engagement role is not being played by demographic groups who are traditionally disadvantaged in the classroom (e.g., black and male). A more systematic analysis could extend the results to a large number of classrooms, seeing how different students play different roles in different settings. 
+
+Overall, this tutorial has offered an overview of doing positional and role analysis in R. We will take up many of these themes again in later tutorials, such as in Chapter 11 (duality) and Chapter 12 (latent spaces).
