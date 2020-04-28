@@ -1,11 +1,15 @@
 ---
-title:
+title: "Centrality and Hierarchy"
+author: "Saurabh Khanna"
+date: "`r Sys.Date()`"
 output: 
-  html_document
+  github_document:
+    toc: true
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+options(width = 1000)
 ```
 
 # Chapter 9: R Tutorial on Centrality and Hierarchy
@@ -15,7 +19,7 @@ Built with R version
 
 This tutorial walks through the analysis of centrality and hierarchy in R. We will begin by looking at various centrality measures, to determine how they are interrelated, and to discern what they mean. In this way students develop different metrics for node network positioning. We will then explore network-level measures of hierarchy, moving away from individual level positioning to look at the structure of the whole network. Note that this tutorial will build directly on the material from previous tutorials, most clearly from the network measurement tutorial (Ch 3) and the dyad/triad tutorial (Ch 7).
 
-### 1. Setting up the Session and Reading in Example Network Data
+## Setting up the Session and Reading in Example Network Data
 We will work primarily with the igraph package for this tutorial. 
 
 ```{r message=F}
@@ -85,7 +89,7 @@ plot(s641_task, vertex.frame.color=NA, edge.arrow.size=.5, edge.arrow.width=.75,
 
 From the figure alone we can see that the features of these two networks are very different. The task network would appear to have one very central node, with lots of ties, while the social network splits more clearly into groups with one node acting as a bridge between the groups. We will use measures of centrality and centralization to more formally explore these features. Our main substantive goal is to determine which nodes are most important in the classroom and how (or if) this varies across network relation and measure of centrality. Are individuals who are prominent in the task network also prominent in the social interaction network? Which nodes act as bridges? Are they the same nodes with the highest degree? We also want to uncover something about the overall level of inequality and hierarchy that exists in this classroom. Is this a world where one node dominates? 
 
-### 2. Centrality 
+## Centrality 
 
 #### 2.1 Centrality Measures for Social Interactions
 Centrality measures, such as degree and betweenness, capture something about which nodes are most important to the network. These node-level measures can be used as predictors of other outcomes, like attitudes, behaviors, etc. The centrality scores can also be used as the main outcome of interest. Here, we will walk through the code to calculate a number of commonly used measures, with a particular focus on how different measures offer similar or different pictures of which nodes are more central to the network. We begin with the social interaction network. 
@@ -355,7 +359,7 @@ cor_tab
 
 eigen_task is correlated with betweenness_social (rho=.68) and outdegree (rho=.73), possibly because those who are important in tasks also serve as bridges for talk on social issues and have many outbound ties. indegree_task and between_social (rho=.80), and outdegree_task and between_social (rho=.80) are correlated, possibly because the number of indegree and outdegree ties a node has with respect to task talk, the more they serve as a bridge on social talk. incloseness_task2 and incloseness_social2 (rho=.55) are correlated, meaning that those who serve in shortest paths past on inbound ties are equivalent for both social talk and task talk.
 
-### 3. Centralization and the Distribution of Centrality
+## Centralization and the Distribution of Centrality
 We have so far seen which nodes are most important in the classroom using different definitions of centrality. We have also seen how this differs across social and task interactions. To flesh out the story more clearly, it will be useful to formally summarize the distribution of the centrality measures, telling us something about the network as a whole. For example, a network with one node capturing the vast majority of ties is highly centralized, or highly unequal, as all of the activity in the network is focused on a particular node. A highly centralized network is also relatively fragile, as removing the one central node would greatly reduce the connectivity of the network. We could examine the distribution of any of the centrality scores we calculated above. Here, let's focus on indegree as a way of exploring the level of centralization in the two networks. Let's start with a summary of the indegree distributions.
 
 ```{r}
@@ -422,7 +426,7 @@ Here we see that for the task network most people have one or two ties and one p
 
 More generally, our centrality and centralization analyses paint a picture of two different kinds of interactional tendencies. For the social interaction network, we have a set of divided groups bridged by one focal node with high betweenness. Within each group there are prominent nodes with high degree, closeness, etc. but only one node holds the whole network together. For the task network, there is only one focal node, with everyone doing task interactions with them and few interactions happening otherwise. 
 
-### 4. Clustering and Hierarchy: Tau Statistic
+## Clustering and Hierarchy: Tau Statistic
 We have so far used centrality and centralization to explore the classroom networks. Centrality is focused on individual positions in the network and can tell us who holds important positions and who does not. Centralization helps us understand how unequally distributed centrality is in the network. Neither measure (centrality nor centralization) can tell us much about hierarchy at the group level. We may, however, want to know if the groups that exist in our classroom are themselves hierarchically arranged. 
 
 To explore hierarchy at the group-level, it will be useful to consider other kinds of measures. Here, we will use the tau statistic. The tau statistic captures how micro processes aggregate to create different macro structures. The basic idea is to create hypotheses in the form of different triad counts (the micro processes), that should yield different features at the macro-level. Thus, different micro hypotheses (about which triads should be in the network at high/low rates) correspond to different kinds of emergent features at the macro level. By comparing the observed triad counts to that expected under a null hypothesis, we can see what kinds of hierarchical arrangements exist in the network of interest. Formally, we compare the observed triad counts to the expectations under a null hypothesis of a random network with the same dyad census. This is analogous to the kinds of tests we explored in Chapter 7, but the tau statistic is presented as a z-score (how many standard deviations from the null hypothesis is the observed value), making it akin to more traditional statistical tests. 

@@ -1,24 +1,17 @@
 ---
-title:
-output:
-  html_document:
-    includes:
-      in_header: header.html
+title: "Positions and Roles"
+author: "Saurabh Khanna"
+date: "`r Sys.Date()`"
+output: 
+  github_document:
+    toc: true
 ---
-
-<style>
-pre code, pre, code {
-  white-space: pre !important;
-  overflow-x: scroll !important;
-  word-break: keep-all !important;
-  word-wrap: initial !important;
-}
-</style>
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-options(width=1000)
+options(width = 1000)
 ```
+
 
 # Chapter 10: R Tutorial on Positions and Roles
 
@@ -29,7 +22,7 @@ This tutorial offers an analysis in R focused on defining positions and roles in
 
 Our main substantive goal is to describe the role structure that exists in this classroom. How do different sets of nodes relate to one another within the larger functioning of the classroom? What are the rights and responsibilities of one set relative to another? As this is a classroom, the rights and responsibilities pertain to expectations of social interaction (do nodes in one set have positive social interactions with nodes in another?) as well as task interactions. For example, is this is a system where students tend to break off into separate friendship groups that also map onto task interactions? Or perhaps there are certain alliances, where certain friendship groups come together to complete work in the classroom. Or maybe there is a single, important node (like the teacher) that is crucial in holding the classroom together. 
 
-### 1. Reading in Example Network Data
+## Reading in Example Network Data
 For this session we will start with the igraph package.
 
 ```{r message=F}
@@ -107,7 +100,7 @@ net182_task=simplify(net182_task, edge.attr.comb="mean")
 net182_task
 ```
 
-### 2. Getting the Data Ready 
+## Getting the Data Ready 
 Here we will use the classroom data read in above. We incorporate all three relations into the analysis. Role analysis is built to incorporate multiple relations and we make use of the friendship, task and social interaction data. The first step in doing a role/position analysis is to place nodes into equivalent positions. Here, we define equivalence based on the idea of structural equivalence. With structural equivalence, nodes who are tied to similar nodes are placed in the same position. In order to do that we must know how similar/dissimilar each node is compared to the other nodes. Formally, this means calculating the distance between rows (where the rows show who i is friends with, does tasks with etc.) Nodes who are friends with the same people (even if they are not themselves friends), do tasks with the same people, etc.  should be in the same position.
 
 One complication in doing this kind of analysis is that we want to make use of multiple relations (here friendship, social and task). We need to put together nodes with the same interaction patterns across all relations at once. The relations of interest must then be taken together as a single input. Given this requirement, let's first get the matrices for each relation and put them together in one matrix. Here we get the matrices for each relation: friendship, social and task.
@@ -152,7 +145,7 @@ This matrix contains the friend ties going out from i, the friend ties going in 
 friends_task_social=cbind(friend_mat, friend_mat_in, task_mat, social_mat) 
 ```
 
-### 3. Calculating Distance Between Nodes in the Network based on Pattern of Ties
+## Calculating Distance Between Nodes in the Network based on Pattern of Ties
 Now we have a single n x 4n matrix that represents friendship, social and task interactions. From this, we can generate an n x n distance matrix that shows the degree of structural equivalence of each node in the network. The calculation shows how different/similar each row, or node, is to every other row. Nodes with similar patterns of network ties (along the 4 types of ties) will have low distance between them. The function is dist. The inputs are: x=data to calculate distance on; method=method to calculate distance between rows. There are a number of options to calculate the distance between rows, including euclidean distance, defined as: (sqrt(sum((x_i - y_i)^2))). We use the euclidean option here.
 
 ```{r}
@@ -183,7 +176,7 @@ text(x, y, labels=1:length(x), cex=1)
 
 Looking at the figure, our first impression is that there are clearly defined positions in the network. We can see, for example, that node 16 is quite distinct from everyone else, while nodes 1, 10, 12 and 15 cluster together, meaning they have similar patterns of friendship, social and task interactions. We will, however, want to use a more formal analysis to make an informed decision on how many positions gives us a reasonable approximation of the underlying structure of the network. 
 
-### 4. Defining Positions 
+## Defining Positions 
 Here, we cluster our nodes into structurally equivalent positions. We will take our distance matrix and try to cluster our nodes so that nodes who are close, or have the same pattern of ties, are placed into the same position. Note that this is conceptually different than finding groups (or communities, see Chapter 8). Nodes are placed into positions based on having the same pattern of ties to other nodes. It is thus possible for nodes to be placed together in a position even if they have few ties to each other, as long as they have the same set of ties to all other nodes. Thus, it is possible to have a position with low internal density.
 
 There are many different approaches to clustering data. We will focus on a simple approach, hierarchical clustering, but discuss other options below. Note that these approaches are general solutions to the problem of clustering data and are not particular to network data. 
@@ -232,7 +225,7 @@ Under this criteria the optimal solution has 4 clusters. Note that the inputs, i
 
 In general, it is a good idea to compare the results across different approaches. Additionally, a strictly 'statistical' answer to defining positions may not always be desirable, as the researcher, with a deep understanding of the substantive case, may have good reason to examine one set of positions rather than another (for example, when choosing between levels of aggregation). It is important to balance concerns over fit with concerns over interpretation. 
 
-### 5. Role Analysis 
+## Role Analysis 
 We now turn to a role analysis, where the focus is on the ties between positions. We will utilize our 5 cluster solution from above to define the positions (saved in hc_ids). We will begin by forming a blockmodel, a matrix where the positions themselves are the nodes, or blocks, of interest. In this way, the previously found positions are the rows/columns of the matrix. Here will use the blockmodel command in sna.
 
 ```{r message=F}
