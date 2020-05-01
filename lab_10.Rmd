@@ -155,9 +155,8 @@ euclid_dist
 
 This suggests, for example, that node 1 has similar ties as node 12 and really different ties as node 13. Note that it is also possible to use correlation as a means of defining the similarity/dissimilarity between rows. Now, let's visualize the distances using MDS, based on the euclidean distance calculation. The cmdscale function performs classical multidimensional scaling, putting each case into a position in a space, such that the distance between positions is (approximately) equal to the distance between those rows in the data. The basic inputs are the distance matrix and k, the number of dimensions. Here we want a two-dimensional solution to make it easier to visualize.
 
-```{r}
-fit=cmdscale(euclid_dist, k=2) 
-fit
+```{r deadlock, warning=F, message=F}
+fit = cmdscale(euclid_dist, k=2) 
 ```
 
 Let’s grab the x, y coordinates and then plot the solution.

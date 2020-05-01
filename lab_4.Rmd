@@ -74,7 +74,7 @@ There are 0s, 1s and NAs. A 1 indicates that a non-missing node reports a friend
 sorority_matrix[2, 7]
 ```
 
-### 2. Constructing the Network Using no Imputation 
+## Constructing the Network Using no Imputation 
 We will begin by constructing the network assuming that the researcher takes no action to deal with the missing data. In this case, all of the missing nodes are dropped from the network when constructing the network object. This means that all ties from non-missing nodes to missing nodes will also not be included in the network. Let's create a matrix that just includes the non-missing nodes. Note that the syntax below uses the "-" sign to tell R which rows and columns in the matrix should be removed, here those cases that are missing.
 
 ```{r}
@@ -131,7 +131,7 @@ Once we create the closeness function, all we need to do is input the network of
 closeness_function(sororitynet_noimpute)
 ```
 
-### 3. Gauging the Level of Bias
+## Gauging the Level of Bias
 The next question is how much bias we think there is in our estimate, here for closeness. We will examine two different strategies for gauging bias. 
 
 #### 3.1 Gauging Bias Using Past Results
@@ -149,7 +149,7 @@ sd(indeg)
 
 We will thus set the standard deviation to 1.61. The next input is directed/undirected and here the network is directed. The last input is the correlation between the missing nodes and their centrality. Are central nodes more/less likely to be missing? This can be difficult to determine as we do not have much information on the missing nodes. One possibility is to put in different inputs for this correlation and calculate a range of possible bias. A second option is to compare the indegree of the missing nodes to the indegree of the non-missing nodes and see which is higher. When the indegree is higher for missing nodes, the correlation is positive between being missing and centrality.  Here we will set the correlation between missing nodes and centrality at .25, a slight positive correlation, although we could try alternative values. Given these inputs, the expected bias for distance is around .19 (using the bias calculator from Smith et al. 2017), similar to the estimate above. Note that the results are somewhat different if we set network type to a specific kind of network (here sorority).
 
-### 4. Simple Imputation Options: Network Reconstruction
+## Simple Imputation Options: Network Reconstruction
 We now turn to different options in dealing with missing nodes. Here we will consider an approach that uses a simple imputation procedure, network reconstruction. Network reconstruction is based on the idea that a researcher can leverage the nominations from non-missing nodes to missing nodes to help fill in some of the missing data. For directed networks, there are three basic versions of network reconstruction imputation: directed (or asymmetric), reciprocated, and probabilistic. In this section we will walk through each one.
 
 To begin, we will go back to the original matrix, sorority_matrix, and construct a network based on the non-missing nodes and any missing node that was nominated by a non-missing node. Let's identify which missing nodes we will put back in the network.To identify these nodes, we first subset the matrix, only looking at the nominations to the missing nodes.
@@ -178,7 +178,7 @@ still_missing=missing[indeg_missing==0]
 still_missing
 ```
 
-#### 4.1 Network Reconstruction: Directed (Asymmetric) Option
+### Network Reconstruction: Directed (Asymmetric) Option
 So far, we have defined which missing nodes should go back into the imputed network. Next, we must decide on what ties should be imputed. Here, we will focus on the potential ties from missing nodes to the non-missing nodes who nominated them. We have no observed information on these ties so we must decide how to treat them. In this 'directed' (or 'asymmetric') option, we do the simplest thing and just assume that no ties exist from the missing nodes back to the non-missing nodes who nominated them. Thus, we assume that all ties from n to m (where n is a non-missing node and m is a missing node) are asymmetric, so that m to n does not exist. 
 
 First, we copy the raw matrix read in above, so we don't make any changes to the original data.
@@ -234,7 +234,7 @@ mean_closeness_impute_directed
 
 In this case, we can see that the directed imputation strategy yields a lower value of closeness (or higher distances) than under no imputation (where closeness was .11)
 
-#### 4.2 Network Reconstruction: Reciprocated Option
+### Network Reconstruction: Reciprocated Option
 Here we repeat the same process as above, still using network reconstruction as the imputation strategy, but we make different assumptions about the ties going from the missing nodes back to the non-missing nodes that nominated them. Here we assume that all ties from n to m (where n is a non-missing node and m is a missing node) are reciprocated, so that m to n exists. 
 
 As before, we start by creating a copy of the friendship matrix, so we don't make any changes to the original data.
@@ -305,7 +305,7 @@ mean_closeness_impute_recip
 
 The closeness value is quite different, and higher, than under no imputation or the simpler directed option.
 
-#### 4.3 Network Reconstruction: Probabilistic Option
+### Network Reconstruction: Probabilistic Option
 Now, we repeat the same process as above, but offer a probabilistic option on how to impute the ties going from the missing nodes back to the non-missing nodes that nominated them. Here, when a tie exists from n to m (where n is a non-missing node and m is a missing node) we assume that a tie from m to n exists with probability p, set to the reciprocity rate in the observed network (just using the set of non-missing nodes). First, we calculate the rate of reciprocity. This gives us a baseline estimate on the probability of a tie being reciprocated. We will use the network constructed above with no imputation to calculate this. 
 
 The function is reciprocity (in the igraph package). Inputs are graph=network and mode="ratio". Ratio ensures that we get the correct calculation, where the number of reciprocated dyads is divided by the total number of non-null dyads, symmetric/(asymmetric+symmetric).

@@ -1,17 +1,23 @@
 Missing Network Data
 ================
 Saurabh Khanna
-2020-04-16
+2020-05-01
 
   - [Chapter 4: R Tutorial on Missing Network
     Data](#chapter-4-r-tutorial-on-missing-network-data)
       - [1. Network Data with Missing
         Nodes](#network-data-with-missing-nodes)
-      - [2. Constructing the Network Using no
+      - [Constructing the Network Using no
         Imputation](#constructing-the-network-using-no-imputation)
-      - [3. Gauging the Level of Bias](#gauging-the-level-of-bias)
-      - [4. Simple Imputation Options: Network
+      - [Gauging the Level of Bias](#gauging-the-level-of-bias)
+      - [Simple Imputation Options: Network
         Reconstruction](#simple-imputation-options-network-reconstruction)
+          - [Network Reconstruction: Directed (Asymmetric)
+            Option](#network-reconstruction-directed-asymmetric-option)
+          - [Network Reconstruction: Reciprocated
+            Option](#network-reconstruction-reciprocated-option)
+          - [Network Reconstruction: Probabilistic
+            Option](#network-reconstruction-probabilistic-option)
 
 # Chapter 4: R Tutorial on Missing Network Data
 
@@ -125,7 +131,7 @@ sorority_matrix[2, 7]
 
     ## [1] NA
 
-### 2\. Constructing the Network Using no Imputation
+## Constructing the Network Using no Imputation
 
 We will begin by constructing the network assuming that the researcher
 takes no action to deal with the missing data. In this case, all of the
@@ -154,9 +160,9 @@ sororitynet_noimpute=graph_from_adjacency_matrix(adjmatrix=sorority_matrix_remov
 sororitynet_noimpute
 ```
 
-    ## IGRAPH e147348 DN-- 58 125 -- 
+    ## IGRAPH 6c44e69 DN-- 58 125 -- 
     ## + attr: name (v/c)
-    ## + edges from e147348 (vertex names):
+    ## + edges from 6c44e69 (vertex names):
     ##   [1] id1 ->id39 id1 ->id42 id3 ->id1  id8 ->id1  id8 ->id42 id8 ->id55 id9 ->id25 id9 ->id28 id9 ->id63 id9 ->id72 id10->id48 id11->id52 id11->id71 id13->id14 id13->id22 id13->id34 id13->id52 id13->id62 id14->id22 id14->id33 id14->id34 id14->id69 id15->id16 id15->id18 id15->id22 id16->id15 id16->id41 id17->id43 id18->id15 id18->id16 id19->id4  id19->id5  id19->id14 id19->id23 id19->id69 id20->id37 id20->id49 id20->id58 id21->id57 id23->id19 id23->id53 id24->id22 id25->id9  id25->id11 id25->id59 id25->id60 id25->id63 id25->id72 id27->id32 id28->id9  id28->id22 id28->id25 id28->id63 id28->id68 id31->id27 id31->id32 id31->id35 id31->id42 id32->id27 id32->id31 id32->id35 id35->id1  id35->id31 id35->id39 id35->id42 id36->id35 id37->id38 id37->id67 id38->id35 id38->id37 id38->id39 id38->id67 id39->id1  id39->id35 id39->id42 id41->id16 id42->id1  id42->id9  id42->id31 id42->id35 id42->id39 id43->id60 id46->id61 id48->id53 id49->id20 id49->id57 id49->id58 id51->id43 id51->id60 id52->id14
     ##  [91] id52->id69 id53->id23 id53->id48 id55->id8  id55->id39 id55->id42 id56->id58 id57->id21 id57->id22 id58->id20 id58->id49 id58->id70 id60->id43 id60->id51 id61->id46 id62->id13 id62->id17 id63->id9  id63->id22 id63->id25 id63->id28 id67->id27 id67->id37 id67->id38 id68->id28 id69->id14 id70->id5  id70->id19 id70->id69 id71->id11 id71->id52 id72->id9  id72->id25 id72->id56 id72->id57
 
@@ -220,7 +226,7 @@ closeness_function(sororitynet_noimpute)
 
     ## [1] 0.1098182
 
-### 3\. Gauging the Level of Bias
+## Gauging the Level of Bias
 
 The next question is how much bias we think there is in our estimate,
 here for closeness. We will examine two different strategies for gauging
@@ -290,7 +296,7 @@ the bias calculator from Smith et al. 2017), similar to the estimate
 above. Note that the results are somewhat different if we set network
 type to a specific kind of network (here sorority).
 
-### 4\. Simple Imputation Options: Network Reconstruction
+## Simple Imputation Options: Network Reconstruction
 
 We now turn to different options in dealing with missing nodes. Here we
 will consider an approach that uses a simple imputation procedure,
@@ -341,7 +347,7 @@ still_missing
 
     ## [1] 65
 
-#### 4.1 Network Reconstruction: Directed (Asymmetric) Option
+### Network Reconstruction: Directed (Asymmetric) Option
 
 So far, we have defined which missing nodes should go back into the
 imputed network. Next, we must decide on what ties should be imputed.
@@ -430,7 +436,7 @@ In this case, we can see that the directed imputation strategy yields a
 lower value of closeness (or higher distances) than under no imputation
 (where closeness was .11)
 
-#### 4.2 Network Reconstruction: Reciprocated Option
+### Network Reconstruction: Reciprocated Option
 
 Here we repeat the same process as above, still using network
 reconstruction as the imputation strategy, but we make different
@@ -533,9 +539,9 @@ sororitynet_impute_recip=delete_vertices(graph=sororitynet_impute_recip, v=still
 sororitynet_impute_recip
 ```
 
-    ## IGRAPH 0bd14b0 DN-- 71 189 -- 
+    ## IGRAPH a38ae32 DN-- 71 189 -- 
     ## + attr: name (v/c)
-    ## + edges from 0bd14b0 (vertex names):
+    ## + edges from a38ae32 (vertex names):
     ##   [1] id1 ->id39 id1 ->id42 id2 ->id13 id2 ->id62 id3 ->id1  id3 ->id7  id3 ->id26 id3 ->id64 id3 ->id66 id7 ->id3  id8 ->id1  id8 ->id42 id8 ->id55 id9 ->id25 id9 ->id28 id9 ->id63 id9 ->id64 id9 ->id72 id10->id44 id10->id48 id10->id64 id11->id50 id11->id52 id11->id71 id12->id20 id12->id31 id12->id32 id12->id35 id12->id42 id12->id55 id13->id2  id13->id14 id13->id22 id13->id34 id13->id52 id13->id62 id14->id22 id14->id33 id14->id34 id14->id44 id14->id69 id15->id16 id15->id18 id15->id22 id16->id15 id16->id41 id17->id43 id18->id15 id18->id16 id19->id4  id19->id5  id19->id14 id19->id23 id19->id47 id19->id69 id20->id12 id20->id37 id20->id49 id20->id58 id21->id57 id23->id19 id23->id44 id23->id53 id24->id22 id25->id9  id25->id11 id25->id59 id25->id60 id25->id63 id25->id64 id25->id72 id26->id3  id27->id29 id27->id32 id28->id9  id28->id22 id28->id25 id28->id63 id28->id68 id29->id27 id29->id37 id29->id38 id29->id67 id30->id56 id30->id72 id31->id12 id31->id27 id31->id32 id31->id35 id31->id42
     ##  [91] id32->id12 id32->id27 id32->id31 id32->id35 id35->id1  id35->id12 id35->id31 id35->id39 id35->id42 id36->id35 id37->id29 id37->id38 id37->id67 id38->id29 id38->id35 id38->id37 id38->id39 id38->id67 id39->id1  id39->id35 id39->id42 id41->id16 id42->id1  id42->id9  id42->id12 id42->id31 id42->id35 id42->id39 id43->id60 id44->id10 id44->id14 id44->id23 id44->id48 id44->id53 id45->id60 id46->id54 id46->id61 id47->id19 id48->id44 id48->id53 id49->id20 id49->id57 id49->id58 id50->id11 id51->id43 id51->id60 id52->id14 id52->id69 id53->id23 id53->id44 id53->id48 id54->id46 id54->id61 id55->id8  id55->id12 id55->id39 id55->id42 id56->id30 id56->id58 id57->id21 id57->id22 id58->id20 id58->id49 id58->id70 id60->id43 id60->id45 id60->id51 id61->id46 id61->id54 id62->id2  id62->id13 id62->id17 id63->id9  id63->id22 id63->id25 id63->id28 id63->id64 id64->id3  id64->id9  id64->id10 id64->id25 id64->id63 id66->id3  id67->id27 id67->id29 id67->id37 id67->id38 id68->id28 id69->id14 id70->id5 
     ## [181] id70->id19 id70->id69 id71->id11 id71->id52 id72->id9  id72->id25 id72->id30 id72->id56 id72->id57
@@ -552,7 +558,7 @@ mean_closeness_impute_recip
 The closeness value is quite different, and higher, than under no
 imputation or the simpler directed option.
 
-#### 4.3 Network Reconstruction: Probabilistic Option
+### Network Reconstruction: Probabilistic Option
 
 Now, we repeat the same process as above, but offer a probabilistic
 option on how to impute the ties going from the missing nodes back to
@@ -625,7 +631,7 @@ mean_closeness_impute_prob=closeness_function(sororitynet_impute_prob)
 mean_closeness_impute_prob
 ```
 
-    ## [1] 0.1064785
+    ## [1] 0.1164228
 
 Note that this introduced a bit of stochastic noise into the imputation
 and if we run this again the results will be slightly different. It
@@ -644,7 +650,7 @@ closeness_table
 ```
 
     ##   true  noimpute     direct     recip      prob
-    ## 1 0.15 0.1098182 0.08920313 0.1574669 0.1064785
+    ## 1 0.15 0.1098182 0.08920313 0.1574669 0.1164228
 
 In this example we can actually compare against the true value on the
 complete network. This is possible because the missing data in this case
