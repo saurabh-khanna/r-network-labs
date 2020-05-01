@@ -5,7 +5,7 @@ Saurabh Khanna
 
   - [Chapter 4: R Tutorial on Missing Network
     Data](#chapter-4-r-tutorial-on-missing-network-data)
-      - [1. Network Data with Missing
+      - [Network Data with Missing
         Nodes](#network-data-with-missing-nodes)
       - [Constructing the Network Using no
         Imputation](#constructing-the-network-using-no-imputation)
@@ -33,7 +33,7 @@ possible level of bias due to missing data (focusing on the case of
 missing nodes). We will then cover simple imputation processes, with the
 goal of limiting the bias due to missing data.
 
-### 1\. Network Data with Missing Nodes
+## Network Data with Missing Nodes
 
 The data for our example are based on friendships between women in a
 sorority. The true network has 72 nodes. In the example that follows we
@@ -160,9 +160,9 @@ sororitynet_noimpute=graph_from_adjacency_matrix(adjmatrix=sorority_matrix_remov
 sororitynet_noimpute
 ```
 
-    ## IGRAPH 6c44e69 DN-- 58 125 -- 
+    ## IGRAPH d43ba4e DN-- 58 125 -- 
     ## + attr: name (v/c)
-    ## + edges from 6c44e69 (vertex names):
+    ## + edges from d43ba4e (vertex names):
     ##   [1] id1 ->id39 id1 ->id42 id3 ->id1  id8 ->id1  id8 ->id42 id8 ->id55 id9 ->id25 id9 ->id28 id9 ->id63 id9 ->id72 id10->id48 id11->id52 id11->id71 id13->id14 id13->id22 id13->id34 id13->id52 id13->id62 id14->id22 id14->id33 id14->id34 id14->id69 id15->id16 id15->id18 id15->id22 id16->id15 id16->id41 id17->id43 id18->id15 id18->id16 id19->id4  id19->id5  id19->id14 id19->id23 id19->id69 id20->id37 id20->id49 id20->id58 id21->id57 id23->id19 id23->id53 id24->id22 id25->id9  id25->id11 id25->id59 id25->id60 id25->id63 id25->id72 id27->id32 id28->id9  id28->id22 id28->id25 id28->id63 id28->id68 id31->id27 id31->id32 id31->id35 id31->id42 id32->id27 id32->id31 id32->id35 id35->id1  id35->id31 id35->id39 id35->id42 id36->id35 id37->id38 id37->id67 id38->id35 id38->id37 id38->id39 id38->id67 id39->id1  id39->id35 id39->id42 id41->id16 id42->id1  id42->id9  id42->id31 id42->id35 id42->id39 id43->id60 id46->id61 id48->id53 id49->id20 id49->id57 id49->id58 id51->id43 id51->id60 id52->id14
     ##  [91] id52->id69 id53->id23 id53->id48 id55->id8  id55->id39 id55->id42 id56->id58 id57->id21 id57->id22 id58->id20 id58->id49 id58->id70 id60->id43 id60->id51 id61->id46 id62->id13 id62->id17 id63->id9  id63->id22 id63->id25 id63->id28 id67->id27 id67->id37 id67->id38 id68->id28 id69->id14 id70->id5  id70->id19 id70->id69 id71->id11 id71->id52 id72->id9  id72->id25 id72->id56 id72->id57
 
@@ -539,9 +539,9 @@ sororitynet_impute_recip=delete_vertices(graph=sororitynet_impute_recip, v=still
 sororitynet_impute_recip
 ```
 
-    ## IGRAPH a38ae32 DN-- 71 189 -- 
+    ## IGRAPH 48d9a9e DN-- 71 189 -- 
     ## + attr: name (v/c)
-    ## + edges from a38ae32 (vertex names):
+    ## + edges from 48d9a9e (vertex names):
     ##   [1] id1 ->id39 id1 ->id42 id2 ->id13 id2 ->id62 id3 ->id1  id3 ->id7  id3 ->id26 id3 ->id64 id3 ->id66 id7 ->id3  id8 ->id1  id8 ->id42 id8 ->id55 id9 ->id25 id9 ->id28 id9 ->id63 id9 ->id64 id9 ->id72 id10->id44 id10->id48 id10->id64 id11->id50 id11->id52 id11->id71 id12->id20 id12->id31 id12->id32 id12->id35 id12->id42 id12->id55 id13->id2  id13->id14 id13->id22 id13->id34 id13->id52 id13->id62 id14->id22 id14->id33 id14->id34 id14->id44 id14->id69 id15->id16 id15->id18 id15->id22 id16->id15 id16->id41 id17->id43 id18->id15 id18->id16 id19->id4  id19->id5  id19->id14 id19->id23 id19->id47 id19->id69 id20->id12 id20->id37 id20->id49 id20->id58 id21->id57 id23->id19 id23->id44 id23->id53 id24->id22 id25->id9  id25->id11 id25->id59 id25->id60 id25->id63 id25->id64 id25->id72 id26->id3  id27->id29 id27->id32 id28->id9  id28->id22 id28->id25 id28->id63 id28->id68 id29->id27 id29->id37 id29->id38 id29->id67 id30->id56 id30->id72 id31->id12 id31->id27 id31->id32 id31->id35 id31->id42
     ##  [91] id32->id12 id32->id27 id32->id31 id32->id35 id35->id1  id35->id12 id35->id31 id35->id39 id35->id42 id36->id35 id37->id29 id37->id38 id37->id67 id38->id29 id38->id35 id38->id37 id38->id39 id38->id67 id39->id1  id39->id35 id39->id42 id41->id16 id42->id1  id42->id9  id42->id12 id42->id31 id42->id35 id42->id39 id43->id60 id44->id10 id44->id14 id44->id23 id44->id48 id44->id53 id45->id60 id46->id54 id46->id61 id47->id19 id48->id44 id48->id53 id49->id20 id49->id57 id49->id58 id50->id11 id51->id43 id51->id60 id52->id14 id52->id69 id53->id23 id53->id44 id53->id48 id54->id46 id54->id61 id55->id8  id55->id12 id55->id39 id55->id42 id56->id30 id56->id58 id57->id21 id57->id22 id58->id20 id58->id49 id58->id70 id60->id43 id60->id45 id60->id51 id61->id46 id61->id54 id62->id2  id62->id13 id62->id17 id63->id9  id63->id22 id63->id25 id63->id28 id63->id64 id64->id3  id64->id9  id64->id10 id64->id25 id64->id63 id66->id3  id67->id27 id67->id29 id67->id37 id67->id38 id68->id28 id69->id14 id70->id5 
     ## [181] id70->id19 id70->id69 id71->id11 id71->id52 id72->id9  id72->id25 id72->id30 id72->id56 id72->id57
@@ -631,7 +631,7 @@ mean_closeness_impute_prob=closeness_function(sororitynet_impute_prob)
 mean_closeness_impute_prob
 ```
 
-    ## [1] 0.1164228
+    ## [1] 0.1451592
 
 Note that this introduced a bit of stochastic noise into the imputation
 and if we run this again the results will be slightly different. It
@@ -650,7 +650,7 @@ closeness_table
 ```
 
     ##   true  noimpute     direct     recip      prob
-    ## 1 0.15 0.1098182 0.08920313 0.1574669 0.1164228
+    ## 1 0.15 0.1098182 0.08920313 0.1574669 0.1451592
 
 In this example we can actually compare against the true value on the
 complete network. This is possible because the missing data in this case

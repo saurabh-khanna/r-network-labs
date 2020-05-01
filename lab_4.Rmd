@@ -19,7 +19,7 @@ Built with R version
 
 This tutorial offers an empirical example dealing with missing network data in R. Missing data is a common problem faced by network researchers. Actors in the network may be absent the day of the survey, refuse to participate and in general offer incomplete information. Practically, a researcher must deal with missing data before doing any actual analyses. We will cover different strategies in assessing the possible level of bias due to missing data (focusing on the case of missing nodes). We will then cover simple imputation processes, with the goal of limiting the bias due to missing data.
 
-### 1. Network Data with Missing Nodes
+## Network Data with Missing Nodes
 The data for our example are based on friendships between women in a sorority. The true network has 72 nodes. In the example that follows we will analyze the network assuming it has missing data, in the form of missing nodes. In the example, there are 14 missing nodes so that no information is available for those 14 nodes in terms of whom they nominated. We can assume that those 14 nodes were absent the day of the survey. Note that we still have any nominations from the non-missing nodes (those who filled out the survey) to the missing nodes. Also note that the actual missing data for this example is generated for the sake of the tutorial, and does not reflect the missing data in the real network.
 
 Here we read in a data frame that indicates which nodes in our toy example are assumed to be missing. 
