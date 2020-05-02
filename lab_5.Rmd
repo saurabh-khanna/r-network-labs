@@ -2,6 +2,7 @@
 title: "Napoleon's invasion of Russia"
 author: "Saurabh Khanna"
 date: "`r Sys.Date()`"
+always_allow_html: true
 output: 
   github_document:
     toc: true
@@ -130,7 +131,7 @@ plot(class_net, vertex.size=indeg+3, vertex.label=NA, vertex.frame.color=NA,
 
 It is also possible to alter the layout of the plot. The default for igraph is to choose the 'best' layout function given the network, but we may want more control than that. For example, using an MDS-based layout:
 
-```{r fig.height=7.5, fig.width=7.5}
+```{r fig.height=7.5, fig.width=7.5, eval=F}
 plot(class_net, vertex.size=indeg+3,vertex.label=NA,vertex.frame.color=NA,
      edge.arrow.size=.5, edge.arrow.width=.75, edge.color="light gray", 
      edge.curved=.15, layout=layout_with_mds, margin=-.10)
@@ -398,7 +399,7 @@ With this new layout, we can see that the first network splits into 3 groups, wi
 ### 2.3 Dynamic Network Movies
 We have so far considered time flattened visualizations of our continuous-time network data. It is also possible to take the dynamic network object and construct a movie of the network evolving over time. In this way, we are able to produce a streaming version of the network, while being able to control the level of aggregation for changes in edges and nodes. Here, we will make use of the functions in the ndtv package. The ndtv package has a very large number of features allowing the researcher to make detailed, custom-made network movies. We only cover a small portion of the features of the package.
 
-```{r message=F, warning=F}
+```{r message=F, warning=F, eval = F}
 library(ndtv)
 ```
 
@@ -413,7 +414,7 @@ We first need to set up the movie by creating a slice.par list that sets the bas
 
 Here we will run the movie over the entire class period, create a layout at each minute and do no aggregation (setting aggregate.dur to 0). We first create a list of these features and then add it to the networkDynamic object.
 
-```{r}
+```{r, eval = F}
 slice.par=list(start=0, end=43, interval=1, aggregate.dur=0, rule="latest")
 
 set.network.attribute(net_dynamic_interactions, 'slice.par', slice.par)
@@ -421,19 +422,19 @@ set.network.attribute(net_dynamic_interactions, 'slice.par', slice.par)
 
 We now are in a position to actually create the movie. It is often useful to save the movie out as an html file. The outputted movie can then be incorporated into websites or presentations. This is accomplished using the render.d3movie function. In this case we set output.mode to "HTML" and set filename to the file we want to save out. Here we will save a file called classroom_movie1.html to the working directory. For convenience, we have also embedded the movie within this html file.
 
-```{r message=F, results='hide'}
+```{r message=F, results='hide', eval = F}
 render.d3movie(net_dynamic_interactions, displaylabels=FALSE, vertex.cex=1.5, 
                output.mode="HTML", filename="classroom_movie1.html")
 ```
 
 
-```{r, results='asis', echo=F, message=F}
+```{r, results='asis', echo=F, message=F, eval = F}
 render.d3movie(net_dynamic_interactions, displaylabels=FALSE, vertex.cex=1.5, output.mode='HTML')
 ```
 
 Looking at the movie, we can see that we get a slice every minute; but since we did not aggregate at all, we only get instantaneous interactions, so only those interactions happening at that exact minute. Given that most interactions do not happen on the minute exactly, much of this is null and not very interesting. So, let’s go ahead and change the slice.par list. Here, let’s set aggregate.dur to 1, so all interactions occurring within the minute are treated as happening in a given time slice (and thus layout). We will save this out as classroom_movie2.html.
 
-```{r message=F, results='hide'}
+```{r message=F, results='hide', eval = F}
 slice.par=list(start=0, end=43, interval=1,  aggregate.dur=1, rule="latest")
 
 set.network.attribute(net_dynamic_interactions, 'slice.par', slice.par)
@@ -443,7 +444,7 @@ render.d3movie(net_dynamic_interactions, displaylabels=FALSE, vertex.cex=1.5,
 ```
 
 
-```{r, results='asis', echo=F, message=F}
+```{r, results='asis', echo=F, message=F, eval = F}
 #same as above, just used to get video in html
 render.d3movie(net_dynamic_interactions, displaylabels=FALSE, vertex.cex=1.5, output.mode='HTML')
 ```
@@ -452,7 +453,7 @@ Note that we begin to see a bit more structure emerge, as reciprocity is now pos
 
 Here we will produce the same movie but color the nodes by gender (set using vertex.cols).
 
-```{r message=F, results='hide'}
+```{r message=F, results='hide', eval = F}
 slice.par=list(start=0, end=43, interval=1,  aggregate.dur=1, rule="latest")
 
 set.network.attribute(net_dynamic_interactions, 'slice.par', slice.par)
@@ -462,14 +463,14 @@ render.d3movie(net_dynamic_interactions, displaylabels=FALSE, vertex.cex=1.5,
 ```
 
 
-```{r, results='asis', echo=F, message=F}
+```{r, results='asis', echo=F, message=F, eval = F}
 #same as above, just used to get video in html
 render.d3movie(net_dynamic_interactions, displaylabels=FALSE, vertex.cex=1.5,vertex.col=cols, output.mode='HTML')
 ```
 
 We can aggregate even further and construct the movie based on a longer time range. Here we will aggregate over 10 minute time chucks (0-10, 10-20, 20-30, 30-40, 40-end). Thus, for the first slice, an edge exists between i and j if i talked to j in the first 10 minutes of class. This aggregation maintains some of the dynamic elements of the data while still capturing the larger structures that emerge in the network. The idea is that while we lose some of the dynamic time-stamped data (as every interaction within the threshold is treated the same, as a tie), we gain a bit more information on network features like distance and reachability, which are hard to capture when all interactions happen at unique time points.
 
-```{r message=F, results='hide'}
+```{r message=F, results='hide', eval = F}
 slice.par=list(start=0, end=43, interval=10, aggregate.dur=10, rule="latest")
 
 set.network.attribute(net_dynamic_interactions, 'slice.par', slice.par)
@@ -478,14 +479,14 @@ render.d3movie(net_dynamic_interactions, displaylabels=FALSE, vertex.cex=1.5,
                vertex.col=cols, output.mode="HTML", filename="classroom_movie4.html")
 ```
 
-```{r, results='asis', echo=F, message=F}
+```{r, results='asis', echo=F, message=F, eval = F}
 #same as above, just used to get video in html
 render.d3movie(net_dynamic_interactions, displaylabels=FALSE, vertex.cex=1.5,vertex.col=cols, output.mode='HTML')
 ```
 
 With this longer time period of aggregation, we begin to see groups emerge which was less possible when the aggregated intervals were only a minute. Finally, we can continue to use 10 minutes to aggregate the edges but set the interval to 1. In this case, rather than just doing 0-10, 10-20, 20-30, 30-40, the movie will do 0-10, 1-11, 2-12, etc. moving the interval up by 1 in each layout. 
 
-```{r message=F, results='hide'}
+```{r message=F, results='hide', eval=F}
 slice.par=list(start=0, end=43, interval=1, aggregate.dur=10, rule="latest")
 
 set.network.attribute(net_dynamic_interactions, 'slice.par', slice.par)
@@ -494,7 +495,7 @@ render.d3movie(net_dynamic_interactions, displaylabels=FALSE, vertex.cex=1.5,
                vertex.col=cols, output.mode="HTML", filename="classroom_movie5.html")
 ```
 
-```{r, results='asis', echo=F, message=F}
+```{r, results='asis', echo=F, eval = F, message=F}
 #same as above, just used to get video in html
 render.d3movie(net_dynamic_interactions, displaylabels=FALSE, vertex.cex=1.5, vertex.col=cols, output.mode='HTML')
 ```
