@@ -1,7 +1,10 @@
 ---
-title:
+title: "Latent Spaces"
+author: "Saurabh Khanna"
+date: "`r Sys.Date()`"
 output: 
-  html_document
+  github_document:
+    toc: true
 ---
 
 ```{r setup, include=FALSE}
@@ -16,7 +19,7 @@ In this tutorial we cover latent space approaches in R. Latent space approaches 
 
 Our substantive case is based on the dissertation topics of PhD students in sociology and related disciplines. We have data on the topic and department of students who submitted a dissertation between 1990 and 2013 (limited to topics typically studied by sociologists). Our main question is how students in different departments fall into different topics and what structures this relationship. We also want to know which topics are 'close' to which other topics (where topics are close if they are covered by the same kinds of departments) and which departments are close to which other departments (where departments are close if they cover the same kinds of topics). We want to understand the department/topic structure in a holistic manner, capturing the department-department, topic-topic and department-topic relationships simultaneously. It is important to recognize that the data are not network data per se (just counts of people in departments and topics) but we will analyze such data from a relational, network perspective, applying ideas of duality, position, distance and the like.
 
-### 1. Correspondence Analysis
+## Correspondence Analysis
 Let's start by loading some useful packages. 
 
 ```{r message=F}
@@ -96,7 +99,7 @@ fviz_ca_row(ca_mod1, col.row="orange", labelsize=3 ) +
   theme_minimal()
 ```
 
-### 2. Choosing the Number of Dimensions
+## Choosing the Number of Dimensions
 
 We have so far run an initial correspondence analysis and interpreted the results. Here we want to take a closer look at the analysis, to make sure we have the proper set of results. There are a number of issues we need to consider. First, we need to decide how many dimensions are sufficient to represent the space. This means we need to decide on the appropriate number of dimensions to use when interpreting the results. We need to balance fit (more dimensions) with ease of interpretation and presentation (fewer dimensions). Remember that the eigenvalues tell us how much each dimension contributes to explaining the total variance in the data. So let's start by looking at the eigenvalues for each dimension more closely.
 
@@ -148,7 +151,7 @@ text3D(x=locs_department[,"Dim 1"], y=locs_department[,"Dim 2"], z=locs_departme
 
 The plot is somewhat hard to read in three dimensions, but if we look at the third (z) dimension, we can see that on one extreme we have higher education and administration and on the other end we have English and performing arts. Thus, dimension 3 basically separates some of the departments that are close together on dimension 2 (English and higher education) but unless we really think that distinction is crucial we may be able to get away with the simpler 2-d plot, especially as those departments are already pretty different on dimension 1.
 
-### 3. Importance and Position of Specific Rows/Columns (Optional Topic)
+## Importance and Position of Specific Rows/Columns (Optional Topic)
 So far we have been examining the quality of the whole model. It will also be useful to assess the specific objects (departments and topics) in terms of their contribution to the fit for each dimension. This can help us in interpreting the dimensions of the space, by showing which rows/columns are most important in fitting a given dimension. Higher values mean that the row is more important in defining that dimension (i.e. the locations of other departments are based on the extreme location of the given department). We can get a handy plot that will sort from high to low on each dimension. The function is fviv_contrib. The inputs are the CA object, the choice (either row or column) and the axes (i.e., dimension) of interest. Here we plot the contribution of each row for the first dimension. We also change the size and angle of the axis labels to make them easier to read (using ggplot functions).
 
 ```{r fig.height=7.5, fig.width=8.5}
@@ -183,7 +186,7 @@ fviz_ca_biplot(ca_mod1, col.row="contrib", col.col ="contrib", labelsize=3) +
 
 Looking at our figure, it is worth thinking about what it means to be in the center of the plot compared to the extremes on one of the dimensions. For example, sociology (department) and life course (topic) are in the center, while political science and social movements are not. This would suggest that sociology PhDs tend to take on dissertations that span many of the topics in the field. Similarly, this means that individuals from a wide variety of disciplines study life course. On the other hand, social movements is not studied by a wide variety of departments while those in political science tend not to study a large number of (sociological) topics, focused mainly on social movements. We thus have distinctions between central, generalist departments/topics and those that occupy more peripheral, niche locations. 
 
-### 4. Hierarchical Clustering 
+## Hierarchical Clustering 
 To aid in interpretation, it may be useful to cluster the departments and topics into distinct, structurally equivalent sets, where departments (or topics) that are close together in the space are placed in the same cluster (they are structurally equivalent in the sense of having the same pattern of topics). This can make it easier to talk through the results, as we can start to identify particular regions of the space, and not just the dimensions making up the space. Here we will make use of hierarchical clustering (see also Ch 10). We begin by calculating the distance matrix between objects, both topics and departments, based on the locations from the two dimensional solution. Let's first put locations for the departments and topics together into one data frame. We already have the locations for the departments, so let’s just grab the locations for the topics: 
 
 ```{r}

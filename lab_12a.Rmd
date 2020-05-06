@@ -1,9 +1,10 @@
 ---
-title:
+title: "Topic Modeling"
+author: "Saurabh Khanna"
+date: "`r Sys.Date()`"
 output: 
- word_document:
-    reference_docx: word_styles_reference4.0.docx
-always_allow_html: true
+  github_document:
+    toc: true
 ---
 
 ```{r setup, include=FALSE}
@@ -20,7 +21,7 @@ This is the first tutorial for Chapter 12, covering the application of network i
 
 For our empirical case, we analyze textual data based on a set of sociology abstracts (drawn from recent dissertations). We are interested in discovering the latent topics that exist in the data, where each topic is defined by having a distinct pattern of words associated with it. We are also interested in seeing which abstracts get placed together and why. In this way we are trying to uncover the underlying structure of the field of sociology (as represented in abstracts), where certain words and researchers are associated with a topic and certain topics are closer to each other than others. We thus see the intuition of a network approach played out using textual data. As this is a textbook on network analysis, we will not focus on the technical details of topic modeling; instead, we will focus on the substantive application of network ideas to textual data. For those interested in more technical details on topic models, see: https://cran.r-project.org/web/packages/topicmodels/vignettes/topicmodels.pdf. And for information on text mining and textual analysis in general, see: Feinerer, K. Hornik, and D. Meyer. Text mining infrastructure in R. Journal of Statistical Software, 25(5): 1–54, March 2008. ISSN 1548-7660. URL http://www.jstatsoft.org/v25/i05.
 
-### 1. Topic Modeling: Getting the Data Ready
+## Topic Modeling: Getting the Data Ready
 We will need a number of packages to analyze our textual data, here dissertation abstracts in sociology. We will need: NLP (basic processing of natural language), tm (text mining package), SnowballC (word stemming package), topicmodels (package for modeling the topics), and ldatuning (package for evaluating the models). Let's go ahead and load them all.
 
 ```{r message=F}
@@ -205,10 +206,10 @@ sum(mat_abstract_words[1,]>0)
 
 Note that the document-term matrix is analagous to the affiliation matrices we saw in the previous tutorial, where students were on the rows and organizations were on the columns. Here, with textual data, we have documents on the rows and terms on the columns.
 
-### 2. Topic Modeling 
+## Topic Modeling 
 Now, we want to analyze our document-term matrix, applying topic models to the text-based data. We will utilize LDA, latent Dirichlet allocation. LDA attempts to uncover the underlying, or latent, topics in the corpus of interest. Different (latent) topics create different word use and we can use the co-occurrence of words in a document to uncover which words hang together under a given topic. A topic will have a high probability of yielding a set of words when those words are used together at high rates. In a similar way, we can ask which abstracts are likely to fall into which topic, based on their distribution of word choice. In many ways, this is conceptually similar to the positional analysis from Chapter 10, where nodes were placed in the same position if they had the same pattern of ties to other nodes. Here, two abstracts are likely to be in the same topic if they use the same set of words. 
 
-#### 2.1. LDA: Initial Model
+### LDA: Initial Model
 We need to set a few parameters before we can run the model. LDA utilizes Gibbs sampling, a randomized algorithm for obtaining a sequence of observations from a multivariate probability distribution. This sequence will be used to approximate the joint distribution of topics and words. Here we set the key inputs to the algorithm: 
 
 ```{r}
@@ -262,7 +263,7 @@ ldaOut_terms
 
 We can see that topic 2 (for example) yields words like women, student and participation, while topic 3 yields words like parent, family, and children. Note that we can get the actual probabilities for the terms using the posterior function. More generally, it is important to see that the topics are simultaneously constituted by the set of words that are used together and the abstracts that tend to use those words, analogous to the ideas explored in the tutorial on two-mode, affiliation networks.  
 
-#### 2.2. LDA: Picking the Number of Topics
+### LDA: Picking the Number of Topics
 Our initial analysis set the number of latent topics to 5. But we could just as easily have used a different number, yielding a different set of results. The issue of how to determine the appropriate numbers of topics is a difficult one, in part, because there is no single, universally accepted way of doing this. One approach is to redo the analysis using different numbers of topics, interpreting the latent topics at different scales, or resolutions. A quick overview of a corpus may require 10 topics, while something more refined may require 25. We may need 100 topics for a really detailed topical inspection. This strategy is fairly robust (as one does not have to pick a single number of topics) but is also somewhat unsatisfying. It would be nice to have a simple set of results that we can point to as our best estimate of what the true latent topics are. For this, we need a systematic way of finding the optimal number of topics for the corpus. Here we can make use of the functions in the ldatuning package. The basic idea is to rerun the model using increasingly higher number of topics. As k increases, we calculate different fit statistics as a means of comparison, eventually picking the one with the best fit. There are a number of possible fit statistics we could use. Here we utilize two, one suggested by Arun et al. (2010) and the other by Juan et al. (2009). For example, Arun et al. (2010) suggest selecting the model (i.e., number of latent topics) that minimizes the cosine distance between topics. The main function is FindTopicNumber. The main inputs are:
 
 - dtm=document-term matrix
@@ -319,7 +320,7 @@ ldaOut_terms2[,c(2, 7, 12, 20,24)]
 
 What can we conclude substantively from our analysis? First, we can see that some of these topics are easier to interpret than others. Topic 12, for example, clearly centers on school outcomes (school, education, involve, parent). Other topics are a bit harder to parse, and may be an indication that we need to take another look at our model (or text cleaning decisions). For example, Topic 24 is defined by pretty broad, general terms (model, theory, data) and is not easy to label. In such cases, it may be useful to examine the abstracts directly to understand why they had been put together. Second, we can see that many of the topics do seem to center on recognizable research areas in the discipline. Topic 7, for example, is about women, gender and sexuality, while Topic 20 focuses on the family. Other topics cover more narrowly defined areas, like Topic 2 that is centered on Japan and Japanese culture. As a researcher, we would want to walk through the latent topics, interpreting each one and drawing out the larger implications for the substantive case in question. Given these kinds of results, a researcher could also try to predict which researchers fall into which latent topic; for example, based on type of university they attended, gender, etc. Similarly, we could ask how being in a given topic is associated with later career success (i.e., finding a job after graduation).
 
-### 3. A Network Representation of Textual Data
+## A Network Representation of Textual Data
 A researcher may also be interested in producing a network representation of the textual data. This makes it possible to apply network measures, models and visualizations to the corpus. So far we have cleaned the data, modeled the data using LDA but we have not explicitly constructed a network object. Here we go ahead and do that, creating a bipartite network of abstracts by words. Let’s load the igraph package. 
 
 ```{r message=F}
