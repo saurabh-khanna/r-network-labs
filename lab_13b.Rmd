@@ -1,0 +1,437 @@
+---
+title: "STERGMs   "
+author: "Saurabh Khanna"
+date: "`r Sys.Date()`"
+output: 
+  github_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Chapter 13: R Tutorial on Statistical Network Models for Longitudinal Network Data
+
+Built with R version
+`r getRversion()`
+
+This is the second tutorial for Chapter 13 on statistical network models. The first tutorial covered the case of cross-sectional network data. Here, we assume that a researcher has data on at least two time points and is interested in modeling change in the network over time. In this tutorial, we will walk through the estimation and interpretation of Separable Temporal Exponential Random Graph Models, STERGM. We can think of STERGM as a longitudinal extension to ERGM (see previous tutorial). 
+
+With STERG models, we are interested in predicting the formation and dissolution of edges from time T to T+1 (however defined). The model is appropriate for cases where the edges can be defined discretely, for the periods defined in the study. For example, we could predict the formation/dissolution of edges from data collected on relationships amongst students at two different time points. We will consider relational event models, appropriate for continuous-time, streaming data in the next tutorial (Chapter 13c).
+
+For this tutorial, we will use network data collected by Daniel McFarland on adolescents in a classroom. We have four discrete networks, capturing changes in network ties across different segments of a single class period.  An edge exists in the first network if i talked to j in the first 10 minutes of the class (0-10 minutes); there is an edge in the second network if i talked to j in the second 10 minutes (10-20 minutes); there is an edge in the third network if i talked to j in the third 10 minutes (20-30 minutes); and there is an edge in the fourth network if i talked to j in the last segment of the class (30-40 minutes).
+
+Substantively, our main question is how interaction partners in the classroom shift over a single class period. What mechanisms predict the adding of a tie that did not exist earlier in the class? What mechanisms predict the dropping of a tie? And are the mechanisms that predict the adding of a tie the same as dropping one? For example, students are likely to initiate conversations (i.e., add ties) with students who are sitting physically nearby. On the other hand, once two students are talking, sitting adjacent might not have a large effect on maintaining the tie over time; as they have already overcome the initial hurdle of being physically distant. 
+
+## 1. Getting the Data Ready
+We will make use of the network and sna packages in this tutorial (rather than igraph). 
+
+```{r message=F, warning=F}
+library(sna)
+library(network)
+```
+
+As a first step, we will load our four networks, already constructed as network objects.
+
+```{r message=F, warning=F}
+load(url("https://sites.google.com/site/jeffreysmithdatafiles/discrete_talk_nets.RData"))
+```
+
+Let's take a look at the four networks, talk_time1, talk_time2, talk_time3 and talk_time4:
+
+```{r}
+talk_time1
+talk_time2
+talk_time3
+talk_time4
+```
+
+talk_time1 corresponds to interactions taking place in the first 'period' (0-10 minutes), talk_time2 corresponds to interactions taking place in the second 'period'(10-20 minutes) and so on. Note that each of these networks already has attributes mapped onto them; specifically gender and race.
+
+Let's plot the networks for the first two periods. We will set the color of the nodes by gender (navy blue for male and light blue for female). We start by extracting gender from the first network. 
+
+```{r}
+gender=get.vertex.attribute(talk_time1, "gender")
+gender
+```
+
+We now set color based on gender. 
+
+```{r}
+cols=ifelse(gender=="male", "navy blue", "light blue")
+```
+
+We will also set the layout for the plot to be the same across the two periods. This makes it easier to see how edges are dropped/added from period to period. We accomplish this by defining the locations (locs) to place the nodes and then using the coord option in the plot statement. We define the locations of the nodes based on the period 1 network. 
+
+```{r fig.width=9.0, fig.height=6.0}
+
+locs=network.layout.fruchtermanreingold(talk_time1, layout.par=NULL)
+
+par(mfrow=c(1, 2))
+
+plot(talk_time1, main="Talk to Network, 0 to 10 Minutes", vertex.col=cols, coord=locs, vertex.cex=2)
+plot(talk_time2, main="Talk to Network, 10 to 20 Minutes", vertex.col=cols, coord=locs, vertex.cex=2) 
+
+```
+
+We see that the basic structure of the network is pretty similar period to period, but specific edges do change. For example, in a number of instances students who were isolates (did not talk to anyone in the first 10 minutes) become active, socially, making connections to existing groups of talking students. We also see that one social group is almost entirely female, but otherwise boys and girls seem to mix pretty freely in this classroom.
+
+STERG models require that our discrete, longitudinal networks be put together as a networkDynamic object. The function is networkDynamic. In this case, the only input we need is a list of networks, where the networks are placed into a list in sequential order (see Chapter 3c for more complicated examples; e.g., where there are time changing vertex attributes or nodes becoming inactive/active over time). The resulting networkDynamic object will serve as input into our STERG model. 
+
+```{r message=F, results='hide', warning=F}
+library(networkDynamic)
+net_dynamic_4periods=networkDynamic(network.list=list(talk_time1, talk_time2, talk_time3, talk_time4))
+```
+
+```{r}
+net_dynamic_4periods
+```
+
+Note that the default here is to set the start time (or onset) at 0 and the terminus at 4, defined as the period where no further change is recorded. We thus have a starting point of period 0 and changes occurring in period 1 , 2 and 3. Let's look at the object as a data frame.
+
+```{r}
+net_dynamic_4periods_dat=as.data.frame(net_dynamic_4periods)
+head(net_dynamic_4periods_dat)
+```
+
+We can see that node 11 sends an edge to node 2 in period 0 (onset) and this lasts to the end of the observation period. As another example, the edge between node 5 and 2 is present in period 0 and period 1 (duration=2), but is dropped during period 2. If we look at row 5, we see that the 5->2 edge is added again during period 3.
+
+We will also add an edge covariate to the networkDynamic object. Here we will include the seating arrangement in the classroom, as we might expect that students who sit close together are more likely to talk to one another. Let's read in the edgelist. 
+
+```{r}
+seating_edgelist=read.table("https://sites.google.com/site/jeffreysmithdatafiles/discrete_talk_nets_seating.txt", 
+                         header=T)
+head(seating_edgelist)
+```
+
+The data is stored as an edgelist, where i->j exists if node i is sitting near (i.e., adjacent) to node j. Let's turn the seating edgelist into a matrix and then add it to the networkDynamic object. We will accomplish this by first turning the edgelist into a network object and then extracting the matrix. We will then attach the matrix to the networkDynamic object using set.network.attribute.
+
+```{r}
+seating_network=network(x=seating_edgelist, directed=F) 
+seating_matrix=as.matrix(seating_network)
+set.network.attribute(net_dynamic_4periods, "seating", seating_matrix)
+```
+
+#### 2. STERGM
+We are now ready to run an initial STERG model, where the goal is to predict the adding/dropping of edges across discretely defined time periods. This amounts to running separate ERGMs predicting the formation and dissolution of edges, given the network at time T. For the formation model, we run an ERGM predicting an edge between i->j in T+1, given that the i->j edge does not exist in the current network, time T. For the dissolution model, we run an ERGM predicting an edge between i->j in time T+1, given that i->j does exist in time T. The dissolution model can also be thought of as a persistence model, as positive effects make it more likely for an edge to last from one period to another. In this way, STERGM is a direct extension of the exponential random graph models covered in the previous tutorial. The models are simply run with the addition of a time component, and corresponding conditioning to capture formation/persistence of edges. This means that the model specifications that work in the ERGM case will (mostly) be appropriate in the STERGM case. 
+
+Let's load the tergm package. Note this depends on networkDynamic and ergm. Let's also load tsna.
+
+```{r message=F}
+library(tergm) 
+library(tsna)
+```
+
+We can cite tergm as: Krivitsky P, Handcock M (2019). tergm: Fit, Simulate and Diagnose Models for Network Evolution Based on Exponential-Family Random Graph Models. The Statnet Project (https://statnet.org>). R package version 3.6.1, https://CRAN.R-project.org/package=tergm.
+
+#### 2.1 Model 1: Just Edges
+
+The main function is stergm. The key inputs are: 
+
+- nw=networkDynamic object of interest
+- formation=formula specifying the formation equation
+- dissolution=formula specifying the dissolution (or persistence) equation
+- estimate=type of estimation to use in fitting model 
+- constraints=formula specifying any constraints to put on model
+- control=list of inputs to control estimation algorithm; set using control.stergm
+- times=periods to include in estimating model
+
+Note that the formation and dissolution formulas are specified separately and do not need to be the same. Note also that the constraints and control inputs work in very similar ways to what we saw in the ERGM case (see previous tutorial). For our first model, we will do something simple and only include a term for edges, capturing the base rate of tie formation/persistence. We set estimate to CMLE. 
+
+```{r message=F, warning=F, results='hide'}
+stergm_mod1=stergm(net_dynamic_4periods, formation ~ edges, dissolution ~ edges, 
+                   estimate="CMLE", times=0:3)
+```
+
+
+```{r}
+summary(stergm_mod1)
+```
+
+We can see that we have two different equations, one for tie formation and one for tie persistence. The results suggest that ties form at a lower rate than if people were randomly forming ties (based on the negative coefficient on edges for the formation model). 
+
+To get a sense of what the results mean, we can look at the coefficient on edges for the tie persistence model. If we take the .4155, we can calculate the probability of an edge persisting from one period to the next:
+
+```{r}
+exp(.4155 )/(1+exp(.4155))
+```
+
+Thus, an edge that existed in one period has a .602 probability of still existing in the next period.
+
+Note that we set times to 0:3, as we want to model the formation and persistence of edges across our four time periods. The default is just to include period 0 and 1 (thus formation/persistence of edges in period 1, given the network at period 0). So, for example, if we run the following bit of code we get the wrong model: 
+
+```{r message=F, warning=F, results='hide'}
+wrong_mod1=stergm(net_dynamic_4periods, formation ~ edges, dissolution ~ edges, estimate="CMLE")
+```
+
+#### 3.2 Model 2: Edges, Homophily and Nodefactor 
+We will now try a little more interesting model, including nodematch and nodefactor terms for gender and race. The nodefactor terms capture basic differences in degree by the nodal attribute of interest (i.e., do girls talk more than boys in class?), while the nodematch terms capture if there is homophily on the attribute (do girls tend to talk to other girls in class?). Here we will keep the formulas for formation and dissolution/persistence the same. 
+
+```{r message=F, warning=F, results='hide'}
+stergm_mod2=stergm(net_dynamic_4periods, 
+                   formation ~ edges + nodematch("gender") + nodefactor("gender") + 
+                     nodematch("race") + nodefactor("race"), 
+                   dissolution ~ edges + nodematch("gender") + nodefactor("gender") + 
+                     nodematch("race") + nodefactor("race"), 
+                   estimate="CMLE", times=0:3)
+```
+
+```{r}
+summary(stergm_mod2)
+```
+Race and gender would not appear to play a large role in the formation or dissolution of edges in this classroom network, although there is some evidence that students who identify as white initiate interactions at lower rates. The fit (based on BIC) is actually worse than in model 1, just including edges. 
+
+#### 3.3 Model 3: Edges, Homophily, Nodefactor and Reciprocity
+Let’s go ahead and add mutual to the model, as there is good reason to believe that there are strong norms of reciprocity in social interactions. Before we fit the model, let’s use set.seed to help with reproducibility. 
+
+```{r message=F, warning=F, results='hide'}
+set.seed(1000) 
+stergm_mod3a=stergm(net_dynamic_4periods, 
+                    formation ~ edges + nodematch("gender") + nodefactor("gender") +  
+                      nodematch("race") + nodefactor("race") + mutual, 
+                    dissolution ~ edges + nodematch("gender") + nodefactor("gender") +  
+                      nodematch("race") + nodefactor("race") + mutual,
+                    estimate="CMLE", times=0:3)
+
+
+```
+
+The model with mutual is estimated with MCMC estimation so we need to check the diagnostics, to make sure the model is converging. This is directly analogous to the kind of diagnostics we saw in the ERGM case. 
+
+```{r message=F, warning=F, results='hide'}
+mcmc.diagnostics(stergm_mod3a, vars.per.page=3)
+```
+
+There are two sets of diagnostics; first for the formation model and then for the dissolution model. If we look at the diagnostic plots, we can see that the fit looks okay in some cases, but there are some deviations between the true statistics and those generated by the model in terms of number of edges, as well as the nodematch terms (looking at the dissolution model, the last set of plots). Looking at these results, we might try and change the control parameters, seeing if that helps with fitting the model. Here we will increase the burnin and the interval between sampled networks. 
+
+```{r message=F, warning=F, results='hide'}
+stergm_mod3b=stergm(net_dynamic_4periods, 
+                    formation ~ edges + nodematch("gender") + nodefactor("gender") +  
+                      nodematch("race") + nodefactor("race") + mutual, 
+                    dissolution ~ edges + nodematch("gender") + nodefactor("gender") +  
+                      nodematch("race") + nodefactor("race") + mutual, 
+                    estimate="CMLE", times=0:3, 
+                    control=control.stergm(CMLE.MCMC.burnin=50000, CMLE.MCMC.interval=2000))
+
+mcmc.diagnostics(stergm_mod3b, vars.per.page=3)
+
+```
+
+It looks like changing the control parameters only helped a little in terms of model estimation. Given that the nodefactor and nodematch terms did not improve the fit, let’s go ahead and drop them from the dissolution model and rerun the model, seeing if that helps. 
+
+```{r message=F, warning=F, results='hide'}
+stergm_mod3c=stergm(net_dynamic_4periods, 
+                    formation ~ edges + nodematch("gender") + nodefactor("gender") + 
+                      nodematch("race") + nodefactor("race") + mutual, 
+                    dissolution ~ edges + mutual, 
+                    estimate="CMLE", times=0:3, 
+                    control=control.stergm(CMLE.MCMC.burnin=50000, CMLE.MCMC.interval=2000))
+
+mcmc.diagnostics(stergm_mod3c, vars.per.page=3)
+
+```
+
+The diagnostics look better, with statistics that are generally distributed nicely around the true value. Let’s go ahead and interpret the results. 
+
+```{r}
+summary(stergm_mod3c)
+```
+
+We will interpret the coefficient on mutual for both the formation and dissolution/persistence model. For the formation model, the odds than an edge will form from i->j is exp(7.05) times more likely if it creates a mutual pair (so that in the previous period j->i existed, but i->j did not). For the persistence model, the odds that an edge will persist (given it existed in the previous period) is exp(5.98) times higher if it is mutual. More generally, we can see that reciprocity is a strong predictor of both the formation and persistence of a tie. Students are likely to talk to someone who talked to them previously, and are likely to continue talking where a mutal relationship exists.  
+
+#### 3.4 Model 4: Edges, Homophily, Nodefactor, Reciprocity and Seating
+As a fourth model, we will incorporate seating arrangements into the formation and dissolution/persistence models. The question is whether students who sit close to one another are more likely to initiate, and then maintain, interaction ties. Here, we will include an edgecov term with the seating matrix as the input. Note that we have already included the seating matrix on the networkDynamic object above (so no further manipulation is necessary here). 
+
+```{r message=F, warning=F, results='hide'}
+stergm_mod4=stergm(net_dynamic_4periods, 
+                   formation ~ edges + nodematch("gender") + nodefactor("gender") + 
+                     nodematch("race") + nodefactor("race") + mutual + edgecov("seating"),
+                   dissolution ~ edges + mutual + edgecov("seating"), 
+                   estimate="CMLE", times=0:3, 
+                   control=control.stergm(CMLE.MCMC.burnin=50000, CMLE.MCMC.interval=2000))
+
+```
+
+
+```{r}
+summary(stergm_mod4)
+```
+
+We can see that sitting adjacent to someone raises the probability of forming a tie but not of maintaining one; suggesting the importance of opportunity for beginning social ties but not keeping them. Let’s check the diagnostics on our model. 
+
+```{r message=F, warning=F, results='hide'}
+mcmc.diagnostics(stergm_mod4,vars.per.page=4)
+```
+
+The diagnostics look generally okay. 
+
+##### 3.4.1 Checking Model Fit
+It is also useful to check the fit of the model. One way of seeing if the model is fitting well is to simulate networks based on the underlying model and then compare the statistics in the simulated networks to that observed in the true networks (analogous to the gof function in the ERGM case). Note that the simulations combine the formation and dissolution processes and output the generated networks (based on both processes) at a given time slice. We will use a simulate function. The main inputs are:
+
+- object=model of interest
+- nsim=number of separate replications; set to 1 in case of networkDynamic object
+- time.slices=number of distinct periods to run dynamic simulation over
+- nw.start=indicator for what network to start simulation at; nw.start=1 to begin with first observed network
+- monitor=formula indicating statistics to calculate on the simulated networks. 
+
+For our simulation we will set time.slices to 1000, so we simulate change over 1000 different time periods. Of course our actual data only has 4 time periods, but since the model is about the general tendencies of tie formation and dissolution, having a larger number of time periods simply adds more information about how the model is fitting (i.e., can it generate realistic networks over many periods that correspond to what we saw in the actual data?). We will start the simulations at the time 1 network. We set monitor to the terms in the model, edges and mutual. We include a seed input to ease reproducibility.
+
+```{r}
+sim_mod4=simulate(stergm_mod4, nsim=1, time.slices=1000, nw.start=1, seed=100, 
+                    monitor= ~ edges + mutual)
+```
+
+If we take the generated object, sim_mod4, and use the attributes function, we can grab the statistics for each generated network (specified in the monitor formula). This is housed under the stats part of the object. 
+
+```{r}
+sim_stats=attributes(sim_mod4)$stats
+head(sim_stats)
+```
+
+There are 1000 rows, 1 for each generated network. We see that there is a column for edges and mutual, showing the count for edges and mutual dyads for each simulated network (or time period in the larger simulation). This can be compared to what we saw in the observed network. We will use a tErgmStats function to calculate the statistics on the observed network.  The main inputs are:
+
+- nd=networkDynamic object
+- formula=ergm formula describing terms to calculate statistics on
+- start=period where calculations should start
+- end=period where calculations should end
+
+We will set formula to include edges and mutual, matching what was calculated on the simulated networks above. We set start to 0 and end to 3, as we have 4 time periods, starting from 0 (onset). 
+
+```{r}
+true_values=tErgmStats(nd=net_dynamic_4periods, formula='~ edges+mutual', 
+                       start=0, end=3)
+true_values
+```
+
+Here we summarize the statistics of the simulated networks using an apply statement (summarizing over the columns): 
+
+```{r}
+apply(sim_stats, 2, summary)
+```
+
+The mean number of edges in the generated networks (24.216) is close to what we observed in the actual networks (28, 32, 23, and 24), while mutuality would appear to be underestimated slightly (with a mean value of 8.036 in the simulated networks and values of 10, 12, 14 and 16 in the observed networks). As another way of assessing fit, we can extract networks from particular time periods and plot them against the observed network (we could also run a movie over all of the simulated networks). Here we will take the network from time period 10. We will use the network.extract function, setting at to 10. 
+
+```{r}
+net10=network.extract(sim_mod4, at=10)
+```
+
+And now let’s plot the simulated network against the observed network, here just from the first 10 minute period.
+
+```{r fig.width=9.0, fig.height=6.0}
+par(mfrow=c(1, 2))
+plot(talk_time1, main="Observed Network from 0-10 Minutes")
+plot(net10, main="Example Simulated Network")
+```
+
+The observed network and the simulated network are similar in many respects (both high reciprocity and sparse) but the observed network has higher transitivity, breaking up into well-defined groups. One way of seeing this more formally is to rerun the simulation, but this time include other statistics in the monitor formula. Here we will include the count on the number of transitive triads. Note that the transitive term was not included in the original model.
+
+```{r}
+sim_mod4=simulate(stergm_mod4, nsim=1, time.slices=1000, nw.start=1, seed=100,
+                    monitor= ~ edges + mutual + transitive)
+```
+
+Let’s summarize the values for our three statistics over the simulated networks.
+
+```{r}
+sim_values=apply(attributes(sim_mod4)$stats, 2, summary)
+```
+
+And now let’s add some useful rownames to the values calculated above.
+
+```{r}
+rownames(sim_values)=paste("sim", rownames(sim_values), sep=".")
+sim_values
+```
+
+Here we calculate the true values over the 4 periods as a means of comparison. 
+
+```{r}
+true_values=tErgmStats(nd=net_dynamic_4periods, formula='~ edges+mutual+transitive', start=0, end=3)
+```
+
+Now we take the mean over the 4 time periods.
+
+```{r}
+true_values_mean=colMeans(true_values)
+```
+
+Putting together the true and simulated values:
+
+```{r}
+rbind(sim_values, true.mean=true_values_mean)
+```
+
+It looks like we badly underestimate the number of transitive triads, with the simulated mean (8.19) well under the true mean (27.75). This suggests, as we saw in the plot above, that we should include a term to capture local clustering in the network.
+
+### 3.5 Model 5: Edges, Homophily, Nodefactor, Reciprocity, Seating and GWESP
+For the last set of models, we will include a gwesp term, setting the decay value at .4. 
+
+```{r message=F, warning=F, results='hide'}
+stergm_mod5a=stergm(net_dynamic_4periods,
+                    formation~ edges + nodematch("gender") + nodefactor("gender") + 
+                      nodematch("race") + nodefactor("race") + 
+                      mutual + edgecov("seating") + gwesp(decay=.4, fixed=T), 
+                    dissolution ~ edges + mutual + edgecov("seating") + gwesp(decay=.4, fixed=T), 
+                    estimate="CMLE", times=0:3,
+                    control=control.stergm(CMLE.MCMC.burnin=50000, CMLE.MCMC.interval=2000))
+
+```
+
+
+```{r}
+summary(stergm_mod5a)
+```
+
+We can see that if i and j share a higher number of partners, they are more likely to form an edge in a period, but this does not affect the persistence of an edge. Note that the model fit, in terms of BIC, is improved (from mod4) for the formation model but not the dissolution/persistence model. Let’s rerun the model but drop the gwesp term from the dissolution formula. 
+
+```{r message=F, warning=F, results='hide'}
+stergm_mod5b=stergm(net_dynamic_4periods,
+                    formation ~ edges + nodematch("gender") + nodefactor("gender") + 
+                      nodematch("race") + nodefactor("race") + 
+                      mutual + edgecov("seating") + gwesp(decay=.4, fixed=T), 
+                    dissolution ~ edges + mutual + edgecov("seating"), 
+                    estimate="CMLE", times=0:3,
+                    control=control.stergm(CMLE.MCMC.burnin=50000, CMLE.MCMC.interval=2000))
+
+```
+
+Let’s simulate from the model and see how things look. Here, we will set the monitor formula to include edges, mutual, gwesp and transitive (not included in the original model).
+
+```{r}
+sim_mod5b=simulate(stergm_mod5b, nsim=1, time.slices=1000, nw.start=1, seed=100,
+                     monitor= ~ edges + mutual + gwesp(decay=.4, fixed=T) + transitive)
+```
+
+And now, let’s calculate the values from the simulated network and compare that to the true values. 
+
+```{r}
+sim_values=apply(attributes(sim_mod5b)$stats, 2, summary)
+rownames(sim_values)=paste("sim", rownames(sim_values), sep=".")
+```
+
+Here we calculate the true values, taking the mean over the 4 periods in the next step.
+
+```{r}
+true_values=tErgmStats(nd=net_dynamic_4periods, 
+                       formula='~ edges+mutual+gwesp(decay=.4, fixed=T)+transitive', start=0, end=3)
+
+true_values_mean=colMeans(true_values)
+
+```
+
+Putting together the true and simulated values:
+
+```{r}
+rbind(sim_values, true.mean=true_values_mean)
+```
+
+The model looks generally okay across the statistics, although there are a few too many edges in the generated network (mean=32.20) compared to the true mean (26.75). Assuming we are satisfied with the fit, we can go ahead and interpret the final model.
+
+```{r}
+summary(stergm_mod5b)
+```
+
+Overall, our results suggest that there are strong norms of reciprocity in interactions. An edge is more likely to form when it closes a mutual pair and is more likely to persist when it is mutual. We also see that seating arrangements structure the formation of interaction ties. Individuals sitting close together are likely to initiate interactions. The fact that seating does not affect the persistence of edges suggests that students tend to talk to other students who are physically close, but once initiated, the interaction between i-j has its own internal dynamics independent of where they are seated. We see similar results for gwesp, where individuals are more likely to form a tie with someone with many shared partners; once that tie is initiated, however, it tends to persist at a baseline rate only affected by whether it is reciprocated or not. Gender and race have relatively weak effects on the formation and persistence of ties. For example, even though there is one group of isolated girls, the overall effect of gender on formation and persistence of ties is not particularly strong. 
+
+This tutorial has covered statistical models for discrete, longitudinal network data. In the next tutorial, we take up the analogous problem using streaming, continuous network data.

@@ -275,8 +275,8 @@ Our initial analysis set the number of latent topics to 5. But we could just as 
 
 Here, we rerun the model, varying the number of topics from 4 to 40 (doing it every other number to save time). We set the metrics to "CaoJuan2009" and "Arun2010". Note that this can take a bit to run. 
 
-```{r message=F, results='hide', warning=F}
-fitmodel=FindTopicsNumber(dtm=abstracts_dtm, 
+```{r message=F, results="hide", warning=F}
+fitmodel = FindTopicsNumber(dtm=abstracts_dtm, 
                             topics=seq(from=4, to=40, by=2), 
                             metrics=c("CaoJuan2009", "Arun2010"), 
                             method="Gibbs", 
