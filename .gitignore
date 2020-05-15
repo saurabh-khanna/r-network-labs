@@ -1,3 +1,7 @@
 data/
 .Rproj.user
 *.Rproj
+*.Rmd
+*.pdf
+*.txt
+*.html

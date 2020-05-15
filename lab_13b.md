@@ -1,15 +1,7 @@
-Statistical Network Models for Longitudinal Network Data
+STERGMs
 ================
 Saurabh Khanna
-2020-04-16
-
-  - [Chapter 13: R Tutorial on Statistical Network Models for
-    Longitudinal Network
-    Data](#chapter-13-r-tutorial-on-statistical-network-models-for-longitudinal-network-data)
-      - [1. Getting the Data Ready](#getting-the-data-ready)
-          - [3.5 Model 5: Edges, Homophily, Nodefactor, Reciprocity,
-            Seating and
-            GWESP](#model-5-edges-homophily-nodefactor-reciprocity-seating-and-gwesp)
+2020-05-14
 
 # Chapter 13: R Tutorial on Statistical Network Models for Longitudinal Network Data
 
@@ -65,7 +57,8 @@ library(network)
 ```
 
 As a first step, we will load our four networks, already constructed as
-network objects.
+network
+objects.
 
 ``` r
 load(url("https://sites.google.com/site/jeffreysmithdatafiles/discrete_talk_nets.RData"))
@@ -194,7 +187,7 @@ plot(talk_time1, main="Talk to Network, 0 to 10 Minutes", vertex.col=cols, coord
 plot(talk_time2, main="Talk to Network, 10 to 20 Minutes", vertex.col=cols, coord=locs, vertex.cex=2) 
 ```
 
-![](Chapter13b_Rcode_tutorial_stergm_draft2_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+![](lab_13b_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
 We see that the basic structure of the network is pretty similar period
 to period, but specific edges do change. For example, in a number of
@@ -279,7 +272,8 @@ see that the 5-\>2 edge is added again during period 3.
 We will also add an edge covariate to the networkDynamic object. Here we
 will include the seating arrangement in the classroom, as we might
 expect that students who sit close together are more likely to talk to
-one another. Let’s read in the edgelist.
+one another. Let’s read in the
+edgelist.
 
 ``` r
 seating_edgelist=read.table("https://sites.google.com/site/jeffreysmithdatafiles/discrete_talk_nets_seating.txt", 
@@ -360,7 +354,8 @@ separately and do not need to be the same. Note also that the
 constraints and control inputs work in very similar ways to what we saw
 in the ERGM case (see previous tutorial). For our first model, we will
 do something simple and only include a term for edges, capturing the
-base rate of tie formation/persistence. We set estimate to CMLE.
+base rate of tie formation/persistence. We set estimate to
+CMLE.
 
 ``` r
 stergm_mod1=stergm(net_dynamic_4periods, formation ~ edges, dissolution ~ edges, 
@@ -433,7 +428,8 @@ Note that we set times to 0:3, as we want to model the formation and
 persistence of edges across our four time periods. The default is just
 to include period 0 and 1 (thus formation/persistence of edges in period
 1, given the network at period 0). So, for example, if we run the
-following bit of code we get the wrong model:
+following bit of code we get the wrong
+model:
 
 ``` r
 wrong_mod1=stergm(net_dynamic_4periods, formation ~ edges, dissolution ~ edges, estimate="CMLE")
@@ -536,13 +532,14 @@ stergm_mod3a=stergm(net_dynamic_4periods,
 
 The model with mutual is estimated with MCMC estimation so we need to
 check the diagnostics, to make sure the model is converging. This is
-directly analogous to the kind of diagnostics we saw in the ERGM case.
+directly analogous to the kind of diagnostics we saw in the ERGM
+case.
 
 ``` r
 mcmc.diagnostics(stergm_mod3a, vars.per.page=3)
 ```
 
-![](Chapter13b_Rcode_tutorial_stergm_draft2_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->![](Chapter13b_Rcode_tutorial_stergm_draft2_files/figure-gfm/unnamed-chunk-20-2.png)<!-- -->![](Chapter13b_Rcode_tutorial_stergm_draft2_files/figure-gfm/unnamed-chunk-20-3.png)<!-- -->![](Chapter13b_Rcode_tutorial_stergm_draft2_files/figure-gfm/unnamed-chunk-20-4.png)<!-- -->
+![](lab_13b_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->![](lab_13b_files/figure-gfm/unnamed-chunk-20-2.png)<!-- -->![](lab_13b_files/figure-gfm/unnamed-chunk-20-3.png)<!-- -->![](lab_13b_files/figure-gfm/unnamed-chunk-20-4.png)<!-- -->
 
 There are two sets of diagnostics; first for the formation model and
 then for the dissolution model. If we look at the diagnostic plots, we
@@ -566,7 +563,7 @@ stergm_mod3b=stergm(net_dynamic_4periods,
 mcmc.diagnostics(stergm_mod3b, vars.per.page=3)
 ```
 
-![](Chapter13b_Rcode_tutorial_stergm_draft2_files/figure-gfm/unnamed-chunk-21-1.png)<!-- -->![](Chapter13b_Rcode_tutorial_stergm_draft2_files/figure-gfm/unnamed-chunk-21-2.png)<!-- -->![](Chapter13b_Rcode_tutorial_stergm_draft2_files/figure-gfm/unnamed-chunk-21-3.png)<!-- -->![](Chapter13b_Rcode_tutorial_stergm_draft2_files/figure-gfm/unnamed-chunk-21-4.png)<!-- -->
+![](lab_13b_files/figure-gfm/unnamed-chunk-21-1.png)<!-- -->![](lab_13b_files/figure-gfm/unnamed-chunk-21-2.png)<!-- -->![](lab_13b_files/figure-gfm/unnamed-chunk-21-3.png)<!-- -->![](lab_13b_files/figure-gfm/unnamed-chunk-21-4.png)<!-- -->
 
 It looks like changing the control parameters only helped a little in
 terms of model estimation. Given that the nodefactor and nodematch terms
@@ -584,7 +581,7 @@ stergm_mod3c=stergm(net_dynamic_4periods,
 mcmc.diagnostics(stergm_mod3c, vars.per.page=3)
 ```
 
-![](Chapter13b_Rcode_tutorial_stergm_draft2_files/figure-gfm/unnamed-chunk-22-1.png)<!-- -->![](Chapter13b_Rcode_tutorial_stergm_draft2_files/figure-gfm/unnamed-chunk-22-2.png)<!-- -->![](Chapter13b_Rcode_tutorial_stergm_draft2_files/figure-gfm/unnamed-chunk-22-3.png)<!-- -->
+![](lab_13b_files/figure-gfm/unnamed-chunk-22-1.png)<!-- -->![](lab_13b_files/figure-gfm/unnamed-chunk-22-2.png)<!-- -->![](lab_13b_files/figure-gfm/unnamed-chunk-22-3.png)<!-- -->
 
 The diagnostics look better, with statistics that are generally
 distributed nicely around the true value. Let’s go ahead and interpret
@@ -725,13 +722,14 @@ summary(stergm_mod4)
 We can see that sitting adjacent to someone raises the probability of
 forming a tie but not of maintaining one; suggesting the importance of
 opportunity for beginning social ties but not keeping them. Let’s check
-the diagnostics on our model.
+the diagnostics on our
+model.
 
 ``` r
 mcmc.diagnostics(stergm_mod4,vars.per.page=4)
 ```
 
-![](Chapter13b_Rcode_tutorial_stergm_draft2_files/figure-gfm/unnamed-chunk-26-1.png)<!-- -->![](Chapter13b_Rcode_tutorial_stergm_draft2_files/figure-gfm/unnamed-chunk-26-2.png)<!-- -->![](Chapter13b_Rcode_tutorial_stergm_draft2_files/figure-gfm/unnamed-chunk-26-3.png)<!-- -->
+![](lab_13b_files/figure-gfm/unnamed-chunk-26-1.png)<!-- -->![](lab_13b_files/figure-gfm/unnamed-chunk-26-2.png)<!-- -->![](lab_13b_files/figure-gfm/unnamed-chunk-26-3.png)<!-- -->
 
 The diagnostics look generally okay.
 
@@ -764,7 +762,8 @@ simply adds more information about how the model is fitting (i.e., can
 it generate realistic networks over many periods that correspond to what
 we saw in the actual data?). We will start the simulations at the time 1
 network. We set monitor to the terms in the model, edges and mutual. We
-include a seed input to ease reproducibility.
+include a seed input to ease
+reproducibility.
 
 ``` r
 sim_mod4=simulate(stergm_mod4, nsim=1, time.slices=1000, nw.start=1, seed=100, 
@@ -808,7 +807,8 @@ on the observed network. The main inputs are:
 
 We will set formula to include edges and mutual, matching what was
 calculated on the simulated networks above. We set start to 0 and end to
-3, as we have 4 time periods, starting from 0 (onset).
+3, as we have 4 time periods, starting from 0
+(onset).
 
 ``` r
 true_values=tErgmStats(nd=net_dynamic_4periods, formula='~ edges+mutual', 
@@ -864,7 +864,7 @@ plot(talk_time1, main="Observed Network from 0-10 Minutes")
 plot(net10, main="Example Simulated Network")
 ```
 
-![](Chapter13b_Rcode_tutorial_stergm_draft2_files/figure-gfm/unnamed-chunk-32-1.png)<!-- -->
+![](lab_13b_files/figure-gfm/unnamed-chunk-32-1.png)<!-- -->
 
 The observed network and the simulated network are similar in many
 respects (both high reciprocity and sparse) but the observed network has
@@ -872,7 +872,8 @@ higher transitivity, breaking up into well-defined groups. One way of
 seeing this more formally is to rerun the simulation, but this time
 include other statistics in the monitor formula. Here we will include
 the count on the number of transitive triads. Note that the transitive
-term was not included in the original model.
+term was not included in the original
+model.
 
 ``` r
 sim_mod4=simulate(stergm_mod4, nsim=1, time.slices=1000, nw.start=1, seed=100,
@@ -932,7 +933,8 @@ rbind(sim_values, true.mean=true_values_mean)
 It looks like we badly underestimate the number of transitive triads,
 with the simulated mean (8.19) well under the true mean (27.75). This
 suggests, as we saw in the plot above, that we should include a term to
-capture local clustering in the network.
+capture local clustering in the
+network.
 
 ### 3.5 Model 5: Edges, Homophily, Nodefactor, Reciprocity, Seating and GWESP
 
@@ -1023,7 +1025,8 @@ stergm_mod5b=stergm(net_dynamic_4periods,
 
 Let’s simulate from the model and see how things look. Here, we will set
 the monitor formula to include edges, mutual, gwesp and transitive (not
-included in the original model).
+included in the original
+model).
 
 ``` r
 sim_mod5b=simulate(stergm_mod5b, nsim=1, time.slices=1000, nw.start=1, seed=100,

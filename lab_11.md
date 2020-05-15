@@ -1,26 +1,7 @@
 Duality, Affiliation Data
 ================
 Saurabh Khanna
-2020-05-06
-
-  - [Chapter 11: R Tutorial on Duality, Affiliation
-    Data](#chapter-11-r-tutorial-on-duality-affiliation-data)
-      - [Reading in Example Affiliation Data and Basic Data
-        Management](#reading-in-example-affiliation-data-and-basic-data-management)
-      - [Plotting the Network](#plotting-the-network)
-      - [Single Mode Networks](#single-mode-networks)
-          - [Constructing One-Mode
-            Projections](#constructing-one-mode-projections)
-          - [Analysis of One-mode
-            Network](#analysis-of-one-mode-network)
-          - [Analysis of One-Mode Data using
-            tnet](#analysis-of-one-mode-data-using-tnet)
-      - [Membership Through Time (Supplementary
-        Section)](#membership-through-time-supplementary-section)
-          - [Plots](#plots)
-          - [Centrality](#centrality-1)
-          - [Membership Over Time: Which Clubs Keep their
-            Members?](#membership-over-time-which-clubs-keep-their-members)
+2020-05-14
 
 # Chapter 11: R Tutorial on Duality, Affiliation Data
 
@@ -58,14 +39,16 @@ We will use the igraph library for this tutorial.
 library(igraph) 
 ```
 
-Let’s read in the data files. First for the 1996 school year:
+Let’s read in the data files. First for the 1996 school
+year:
 
 ``` r
 magact96=read.delim(file="https://sites.google.com/site/jeffreysmithdatafiles/mag_act96.txt", 
                     na.strings="na", check.names=FALSE)
 ```
 
-Now for the 1997 school year:
+Now for the 1997 school
+year:
 
 ``` r
 magact97=read.delim(file="https://sites.google.com/site/jeffreysmithdatafiles/mag_act97.txt",
@@ -79,7 +62,8 @@ argument as well. These files consist of four columns of
 individual-level attributes (ID, gender, grade, race), then a series of
 club membership dummy variables (coded “1” for membership, “0” for no
 membership). Let’s take a look at the data (just the first 10 rows and
-10 columns):
+10
+    columns):
 
 ``` r
 magact96[1:10, 1:10] 
@@ -169,9 +153,9 @@ affil_net96=graph_from_incidence_matrix(affil96, mode="all")
 affil_net96 
 ```
 
-    ## IGRAPH 680330b UN-B 1386 2650 -- 
+    ## IGRAPH 370a1eb UN-B 1386 2650 -- 
     ## + attr: type (v/l), name (v/c)
-    ## + edges from 680330b (vertex names):
+    ## + edges from 370a1eb (vertex names):
     ##   [1] 101498--Spanish Club (high)                   101498--Spanish NHS                           101498--NHS                                   101498--Theatre Productions                   101498--Thespian Society (ITS)                104452--Latin Club                            104452--Band, Marching (Symphonic)            104452--Football, 9th                         104452--Basketball, boys 9th                  104456--Latin Club                            104456--German Club                           104462--Latin Club                            104462--Spanish Club                          104462--Choir, concert                        104462--Football, 9th                         104462--Basketball, boys JV                   105215--Theatre Productions                   105215--Thespian Society (ITS)                106517--Pep Club                              106517--Orchestra, Full Concert               106517--Basketball, girls 9th                
     ##  [22] 106517--Track, girls V                        106572--Basketball, girls 8th                 106587--Pep Club                              106587--Orchestra, Full Concert               106587--Cheerleaders, 9th                     106592--Band, 8th                             106592--Football, 8th                         106604--Spanish Club                          106604--Pep Club                              106604--Orchestra, 8th                        106604--Choir, treble                         106609--Spanish Club                          106609--Band, Jazz                            106621--Track, boys 8th                       106709--Spanish Club                          106709--Orchestra, Symphonic                  109492--Baseball, V                           109493--French Club (high)                    109493--Wrestling, V                          113047--Asian Club                            113047--Football, V                          
     ##  [43] 113047--Tennis, boys V                        113050--Football, V                           113053--German Club                           113053--Forensics                             113053--Forensics (National Forensics League) 113060--PEER                                  113060--NHS                                   113107--Soccer, V                             113107--Swim & Dive Team, boys                113122--Spanish Club                          113122--Choir, women's ensemble               113123--Choir, women's ensemble               113127--Spanish Club                          113127--Debate                                113127--Forensics (National Forensics League) 113127--Key Club                              113137--Debate                                113137--Forensics                             113137--Forensics (National Forensics League) 113140--German Club                           113140--Spanish Club                         
@@ -224,13 +208,15 @@ will make nodes, edges, and labels slightly transparent so that when
 things overlap it is still possible to read them. You can read up on the
 RGB color model at <http://en.wikipedia.org/wiki/RGB_color_model>. In
 this case let’s color the students red and the affiliations green. Here
-we set the students red and set the opacity to .5:
+we set the students red and set the opacity to
+.5:
 
 ``` r
 V(affil_net96)$color[type96==FALSE]=rgb(red=1, green=0, blue=0, alpha=.5)
 ```
 
-And now we set the clubs green:
+And now we set the clubs
+green:
 
 ``` r
 V(affil_net96)$color[type96==TRUE]=rgb(red=0, green=1, blue=0, alpha=.5) 
@@ -241,7 +227,8 @@ used above. Students correspond to False in the type variable and clubs
 correspond to True. From here on out, we do not specify “red =”, “green
 =”, “blue =”, and “alpha =”. These are the default arguments (R knows
 the first number corresponds to red, the second to blue, and so on). Now
-we’ll set some other graph attributes:
+we’ll set some other graph
+attributes:
 
 ``` r
 V(affil_net96)$label=V(affil_net96)$name #setting label to id of student or name of club
@@ -326,9 +313,9 @@ affil_net96_noisolates=delete_vertices(affil_net96, degree0)
 affil_net96_noisolates
 ```
 
-    ## IGRAPH ba0bb3c UN-B 948 2650 -- 
+    ## IGRAPH 2490acc UN-B 948 2650 -- 
     ## + attr: type (v/l), name (v/c), color (v/c), label (v/c), label.color (v/c), label.cex (v/n), size (v/n), frame.color (v/c), color (e/c)
-    ## + edges from ba0bb3c (vertex names):
+    ## + edges from 2490acc (vertex names):
     ##   [1] 101498--Spanish Club (high)                   101498--Spanish NHS                           101498--NHS                                   101498--Theatre Productions                   101498--Thespian Society (ITS)                104452--Latin Club                            104452--Band, Marching (Symphonic)            104452--Football, 9th                         104452--Basketball, boys 9th                  104456--Latin Club                            104456--German Club                           104462--Latin Club                            104462--Spanish Club                          104462--Choir, concert                        104462--Football, 9th                         104462--Basketball, boys JV                   105215--Theatre Productions                   105215--Thespian Society (ITS)                106517--Pep Club                              106517--Orchestra, Full Concert               106517--Basketball, girls 9th                
     ##  [22] 106517--Track, girls V                        106572--Basketball, girls 8th                 106587--Pep Club                              106587--Orchestra, Full Concert               106587--Cheerleaders, 9th                     106592--Band, 8th                             106592--Football, 8th                         106604--Spanish Club                          106604--Pep Club                              106604--Orchestra, 8th                        106604--Choir, treble                         106609--Spanish Club                          106609--Band, Jazz                            106621--Track, boys 8th                       106709--Spanish Club                          106709--Orchestra, Symphonic                  109492--Baseball, V                           109493--French Club (high)                    109493--Wrestling, V                          113047--Asian Club                            113047--Football, V                          
     ##  [43] 113047--Tennis, boys V                        113050--Football, V                           113053--German Club                           113053--Forensics                             113053--Forensics (National Forensics League) 113060--PEER                                  113060--NHS                                   113107--Soccer, V                             113107--Swim & Dive Team, boys                113122--Spanish Club                          113122--Choir, women's ensemble               113123--Choir, women's ensemble               113127--Spanish Club                          113127--Debate                                113127--Forensics (National Forensics League) 113127--Key Club                              113137--Debate                                113137--Forensics                             113137--Forensics (National Forensics League) 113140--German Club                           113140--Spanish Club                         
@@ -351,7 +338,8 @@ table(type96_noisolates)
     ##   857    91
 
 We see that we still have 91 clubs but many students have been removed.
-Now, let’s tweak some of the plotting parameters.
+Now, let’s tweak some of the plotting
+parameters.
 
 ``` r
 V(affil_net96_noisolates)$label[type96_noisolates==FALSE]=NA #taking off the labels for the students
@@ -439,7 +427,8 @@ package. To get the one-mode representation of ties between rows
 the one-mode representation of ties between columns (clubs in our
 example), multiply the transpose of the matrix by the matrix. Note that
 you must use the matrix-multiplication operator %\*% rather than a
-simple asterisk. For the club to club network:
+simple asterisk. For the club to club
+    network:
 
 ``` r
 club_club96 = t(affil96) %*% affil96 
@@ -511,9 +500,9 @@ onemode96
 ```
 
     ## $proj1
-    ## IGRAPH f0958c7 UNW- 1295 69493 -- 
+    ## IGRAPH 7860c62 UNW- 1295 69493 -- 
     ## + attr: name (v/c), color (v/c), label (v/c), label.color (v/c), label.cex (v/n), size (v/n), frame.color (v/c), weight (e/n)
-    ## + edges from f0958c7 (vertex names):
+    ## + edges from 7860c62 (vertex names):
     ##   [1] 101498--114037 101498--114679 101498--114977 101498--115477 101498--115805 101498--120854 101498--121353 101498--122618 101498--122626 101498--122627 101498--122631 101498--122635 101498--122639 101498--122640 101498--122644 101498--126782 101498--129059 101498--129083 101498--129114 101498--129204 101498--129235 101498--129796 101498--133025 101498--133027 101498--133962 101498--133976 101498--134405 101498--138131 101498--138287 101498--139161 101498--139362 101498--141490 101498--148531 101498--888885 101498--888898 101498--888901 101498--888903 101498--888911 101498--888912 101498--888913 101498--888940 101498--888944 101498--888967 101498--888968 101498--888980 101498--888981 101498--888989 101498--888991 101498--888998 101498--889006 101498--889014 101498--889016 101498--889017 101498--889029 101498--889035 101498--889036 101498--889042 101498--889046 101498--889047 101498--889053 101498--889057 101498--889059 101498--889068 101498--889076 101498--889078 101498--889079
     ##  [67] 101498--889084 101498--129817 101498--888925 101498--889021 101498--889075 101498--113060 101498--113939 101498--114671 101498--114850 101498--117526 101498--118543 101498--119301 101498--119516 101498--120888 101498--121314 101498--122625 101498--122630 101498--122632 101498--122634 101498--122638 101498--122673 101498--126495 101498--129256 101498--133042 101498--133924 101498--133964 101498--134023 101498--147258 101498--150526 101498--888882 101498--888883 101498--888888 101498--888891 101498--888892 101498--888893 101498--888895 101498--888896 101498--888907 101498--888908 101498--888909 101498--888914 101498--888916 101498--888917 101498--888918 101498--888919 101498--888920 101498--888929 101498--888931 101498--888933 101498--888939 101498--888942 101498--888943 101498--888947 101498--888948 101498--888956 101498--888957 101498--888960 101498--888962 101498--888964 101498--888965 101498--888966 101498--888969 101498--888970 101498--888975 101498--888976 101498--888977
     ## [133] 101498--888978 101498--888983 101498--888984 101498--888987 101498--888988 101498--888990 101498--888992 101498--888997 101498--888999 101498--889000 101498--889007 101498--889010 101498--889013 101498--889024 101498--889025 101498--889026 101498--889027 101498--889032 101498--889033 101498--889038 101498--889043 101498--889048 101498--889051 101498--889052 101498--889056 101498--889060 101498--889069 101498--889071 101498--889074 101498--889081 101498--889082 101498--889085 101498--889086 101498--105215 101498--114025 101498--116724 101498--116862 101498--119263 101498--121373 101498--121385 101498--122656 101498--124451 101498--126274 101498--129483 101498--132669 101498--133022 101498--133970 101498--134002 101498--146858 101498--888894 101498--888930 101498--888935 101498--888973 101498--888982 101498--888994 101498--889058 101498--120202 101498--122662 101498--129366 101498--889005 104452--104456 104452--104462 104452--113168 104452--114037 104452--114076 104452--114078
@@ -525,9 +514,9 @@ onemode96
     ## + ... omitted several edges
     ## 
     ## $proj2
-    ## IGRAPH 35145f0 UNW- 91 1361 -- 
+    ## IGRAPH a563f50 UNW- 91 1361 -- 
     ## + attr: name (v/c), color (v/c), label (v/c), label.color (v/c), label.cex (v/n), size (v/n), frame.color (v/c), weight (e/n)
-    ## + edges from 35145f0 (vertex names):
+    ## + edges from a563f50 (vertex names):
     ##   [1] Asian Club       --Football, V                           Asian Club       --Tennis, boys V                        Asian Club       --Orchestra, Symphonic                  Asian Club       --Choir, a capella                      Asian Club       --Choir, chamber singers                Asian Club       --Debate                                Asian Club       --Forensics                             Asian Club       --Forensics (National Forensics League) Asian Club       --German Club                           Asian Club       --Chess Club                            Asian Club       --Newspaper Staff                       Asian Club       --NHS                                   Asian Club       --Internships                           Asian Club       --Hispanic Club                         Asian Club       --Spanish Club (high)                   Asian Club       --PEER                                  Asian Club       --Pep Club                             
     ##  [18] Asian Club       --Close-up                              Asian Club       --Academic decathalon                   Asian Club       --STUCO                                 Asian Club       --Yearbook Staff                        Asian Club       --Key Club                              Hispanic Club    --Spanish Club (high)                   Hispanic Club    --Spanish NHS                           Hispanic Club    --NHS                                   Hispanic Club    --Theatre Productions                   Hispanic Club    --Tennis, boys V                        Hispanic Club    --Spanish Club                          Hispanic Club    --Science Olympiad                      Hispanic Club    --Academic decathalon                   Hispanic Club    --Pep Club                              Hispanic Club    --Orchestra, Full Concert               Hispanic Club    --Latin Club                            Hispanic Club    --PEER                                 
     ##  [35] Hispanic Club    --Choir, women's ensemble               Hispanic Club    --Chess Club                            Hispanic Club    --Choir, a capella                      Hispanic Club    --Football, V                           Hispanic Club    --Baseball, JV (10th)                   Hispanic Club    --Baseball, V                           Hispanic Club    --French Club (low)                     Hispanic Club    --Pep Club Officers                     Hispanic Club    --Drunk Driving                         Hispanic Club    --Key Club                              Hispanic Club    --Forensics (National Forensics League) Hispanic Club    --Art Club                              Hispanic Club    --Debate                                Hispanic Club    --Forensics                             Hispanic Club    --STUCO                                 Hispanic Club    --Orchestra, Symphonic                  Hispanic Club    --Golf, boys V                         
@@ -690,7 +679,8 @@ We begin with the default weights, the count of members in common.
 deg_normalweights=strength(club_net96, mode="all") 
 ```
 
-And here we use the scaled version of the weights.
+And here we use the scaled version of the
+weights.
 
 ``` r
 deg_scaledweights=strength(club_net96, mode="all", weights=scaled_weights) 
@@ -855,7 +845,8 @@ with the weights included as a key input. In this case, we do not want
 the inverted version of the weights. A higher number of shared members
 means the clubs are more likely to be in the same group, indicating a
 stronger relationship between the clubs. We use the scaled version of
-the weights.
+the
+weights.
 
 ``` r
 groups_scaledweights=cluster_fast_greedy(club_net96, weights=scaled_weights)
@@ -878,7 +869,8 @@ groups_scaledweights
 
 Let’s see what kinds of clubs are in each group, where a group is
 defined by a set of clubs that have high (weighted) rates of interaction
-with each other, defined here by sharing students.
+with each other, defined here by sharing
+    students.
 
 ``` r
 club_names[groups_scaledweights$membership==1]
@@ -1043,7 +1035,8 @@ function is degree\_w. The main inputs are:
 We will first calculate degree putting all of the weight on the edge
 weights, setting alpha to 1. This means that the number of edges is
 ignored in the calculation, and we simply sum up all of the weights
-(i.e., the weights for each edge involving node i).
+(i.e., the weights for each edge involving node
+i).
 
 ``` r
 degree_alpha1=degree_w(net=club_edgelist96, measure="alpha", type="out", alpha=1)
@@ -1076,7 +1069,8 @@ head(deg_data)
     ## French NHS                       145         32.217046
 
 Now, let’s do the other extreme and put all the weight on the edge
-count, ignoring the edge weights (alpha=0).
+count, ignoring the edge weights
+(alpha=0).
 
 ``` r
 degree_alpha0=degree_w(net=club_edgelist96, measure="alpha", type="out", alpha=0)
@@ -1092,7 +1086,8 @@ head(degree_alpha0)
     ## [6,]    6    45
 
 This is the same as the calculation in igraph that ignores the weights,
-stored in deg\_noweight.
+stored in
+    deg\_noweight.
 
 ``` r
 head(deg_noweight)
@@ -1102,7 +1097,8 @@ head(deg_noweight)
     ##                 22                 37                 61                 46                 55                 45
 
 Finally, let’s do something in between and set alpha to .5, putting some
-weight on both the counts and edge weights.
+weight on both the counts and edge
+weights.
 
 ``` r
 degree_alpha.5=degree_w(net=club_edgelist96, measure="alpha", type="out", alpha=.5)
@@ -1173,7 +1169,8 @@ close_igraph_noweight=closeness(club_net96, weights=NA)
 ```
 
 Note that weights is set to NA, as the default is to use the weights on
-the igraph object and we don’t want that here.
+the igraph object and we don’t want that
+    here.
 
 ``` r
 head(close_igraph_noweight)
@@ -1363,16 +1360,17 @@ over time that differs from the pattern of co-membership seen in the
 cross section. Thus, while there may be few people who are
 simultaneously in high French and low French, many people may transition
 from low French to high French from year to year. This also creates
-asymmetries in the data.
+asymmetries in the
+data.
 
 ``` r
 club_net96_97=graph_from_adjacency_matrix(mobility_prob96_97, mode="directed", weighted=T) 
 club_net96_97
 ```
 
-    ## IGRAPH 2b83b85 DNW- 90 2395 -- 
+    ## IGRAPH 29a4df7 DNW- 90 2395 -- 
     ## + attr: name (v/c), weight (e/n)
-    ## + edges from 2b83b85 (vertex names):
+    ## + edges from 29a4df7 (vertex names):
     ##   [1] Asian Club       ->Asian Club                            Asian Club       ->Latin Club                            Asian Club       ->French Club (high)                    Asian Club       ->French NHS                            Asian Club       ->German Club                           Asian Club       ->Pep Club                              Asian Club       ->NHS                                   Asian Club       ->Drunk Driving                         Asian Club       ->Art Club                              Asian Club       ->Theatre Productions                   Asian Club       ->Soccer, V                             Asian Club       ->Tennis, boys V                        Hispanic Club    ->Asian Club                            Hispanic Club    ->Hispanic Club                         Hispanic Club    ->Latin Club                            Hispanic Club    ->French Club (high)                    Hispanic Club    ->Spanish Club                         
     ##  [18] Hispanic Club    ->Spanish Club (high)                   Hispanic Club    ->Spanish NHS                           Hispanic Club    ->Internships                           Hispanic Club    ->Debate                                Hispanic Club    ->Forensics                             Hispanic Club    ->Forensics (National Forensics League) Hispanic Club    ->Science Olympiad                      Hispanic Club    ->Academic decathalon                   Hispanic Club    ->STUCO                                 Hispanic Club    ->PEER                                  Hispanic Club    ->Pep Club                              Hispanic Club    ->Pep Club Officers                     Hispanic Club    ->NHS                                   Hispanic Club    ->Drunk Driving                         Hispanic Club    ->Key Club                              Hispanic Club    ->Theatre Productions                   Hispanic Club    ->Thespian Society (ITS)               
     ##  [35] Hispanic Club    ->Band, Marching (Symphonic)            Hispanic Club    ->Choir, concert                        Hispanic Club    ->Choir, a capella                      Hispanic Club    ->Football, V                           Hispanic Club    ->Basketball, girls JV                  Hispanic Club    ->Baseball, V                           Hispanic Club    ->Tennis, boys V                        Latin Club       ->Asian Club                            Latin Club       ->Hispanic Club                         Latin Club       ->Latin Club                            Latin Club       ->French Club (low)                     Latin Club       ->French Club (high)                    Latin Club       ->French NHS                            Latin Club       ->German Club                           Latin Club       ->German NHS                            Latin Club       ->Spanish Club                          Latin Club       ->Spanish Club (high)                  
@@ -1442,7 +1440,8 @@ toptenclubs96_97
 
     ##  [1] "Pep Club"                              "NHS"                                   "Drunk Driving"                         "Spanish Club"                          "French Club (high)"                    "Spanish Club (high)"                   "Key Club"                              "Forensics (National Forensics League)" "Theatre Productions"                   "Latin Club"
 
-And now let’s compare to the results we saw before:
+And now let’s compare to the results we saw
+before:
 
 ``` r
 compare_dat=data.frame(toptenclubs96=toptenclubs, toptenclubs96_97=toptenclubs96_97)
@@ -1531,7 +1530,8 @@ grade89_club=rep(0, length(prop_stay))
 ```
 
 Now we will identify which clubs should be a 1. We will use a grep
-function to find any club name that has an 8th or 9th in it.
+function to find any club name that has an 8th or 9th in
+it.
 
 ``` r
 which_grade89=c(grep("8th", club_names_keep), grep("9th", club_names_keep))
@@ -1543,7 +1543,8 @@ Here, we put a 1 in all cases where 8th or 9th is found.
 grade89_club[which_grade89]=1 
 ```
 
-Let’s check to make sure this worked:
+Let’s check to make sure this
+    worked:
 
 ``` r
 club_names_keep[grade89_club==1]

@@ -1,24 +1,17 @@
 ---
-title:
-output:
-  html_document:
-    includes:
-      in_header: header.html
+title: "Relational Event Models"
+author: "Saurabh Khanna"
+date: "`r Sys.Date()`"
+output: 
+  github_document:
+    toc: true
 ---
-
-<style>
-pre code, pre, code {
-  white-space: pre !important;
-  overflow-x: scroll !important;
-  word-break: keep-all !important;
-  word-wrap: initial !important;
-}
-</style>
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-options(width=1000)
 ```
+
+
 
 # Chapter 13: R Tutorial on Relational Event Models
 

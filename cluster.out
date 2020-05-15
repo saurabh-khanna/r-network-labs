@@ -1,0 +1,6 @@
+starting worker pid=28497 on localhost:11147 at 16:15:13.618
+starting worker pid=28513 on localhost:11147 at 16:15:13.826
+Warning message:
+In fun(libname, pkgname) : couldn't connect to display ":0"
+Warning message:
+In fun(libname, pkgname) : couldn't connect to display ":0"
