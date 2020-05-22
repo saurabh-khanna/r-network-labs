@@ -13,7 +13,7 @@ options(width = 1000)
 ```
 
 
-# Chapter 10: R Tutorial on Positions and Roles
+# Chapter 10: Tutorial on Positions and Roles
 
 Built with R version
 `r getRversion()`
